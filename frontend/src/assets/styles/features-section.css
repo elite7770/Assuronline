@@ -1,0 +1,175 @@
+.features-section {
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,0.02) 0%, rgba(15,23,42,0.8) 100%),
+    var(--hero-bj-bg) no-repeat center center;
+  background-size: cover, cover;  
+  background-position: center, center;
+  padding: 120px 20px;
+  backdrop-filter: blur(5px);
+  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: fadeInSection 1.5s ease-out;
+  margin-top: 2rem;
+}
+
+@keyframes fadeInSection {
+  0% { 
+    opacity: 0; 
+    transform: translateY(30px);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced smooth fade from previous section (Hero) into Features */
+.features-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, 
+    rgba(15,23,42,1) 0%, 
+    rgba(15,23,42,0.95) 20%,
+    rgba(15,23,42,0.8) 40%,
+    rgba(15,23,42,0.4) 70%,
+    rgba(15,23,42,0) 100%);
+  z-index: 1;
+}
+
+/* Smooth fade from Features into next section (Testimonials) */
+.features-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,1) 100%);
+}
+
+.features-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.features-wrapper h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #FFFFFF;
+  margin-bottom: 10px;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #FFFFFF;
+  margin-bottom: 60px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* For Desktop: Horizontal Layout */
+.features-cards {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.feature-item {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+}
+
+/* For Mobile: Horizontal Scroll Layout */
+@media (max-width: 900px) {
+  .features-cards {
+    display: flex;
+    overflow-x: auto;
+    gap: 30px;
+    padding-bottom: 20px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .feature-item {
+    min-width: 280px;
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+    max-width: none;
+  }
+}
+
+.feature-item {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  padding: 40px 20px;
+  border-radius: 20px;
+  width: 100%;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.feature-item:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+}
+
+.icon-bubble {
+  background: var(--gradient-brand);
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
+  transition: box-shadow 0.3s ease;
+  order: 1;
+}
+
+.feature-item:hover .icon-bubble {
+  box-shadow: 0 0 25px rgba(220, 38, 38, 0.7);
+}
+
+.feature-icon {
+  color: #FFFFFF;
+  width: 32px;
+  height: 32px;
+}
+
+.feature-item h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 12px;
+  order: 2;
+}
+
+.feature-item p {
+  color: #CBD5E1;
+  font-size: 1rem;
+  line-height: 1.5;
+  order: 3;
+}
