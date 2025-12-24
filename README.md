@@ -273,9 +273,8 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ## 👥 Équipe
 
-- **Développeur Principal** : [Votre Nom]
-- **Encadrant Académique** : [Nom de l'encadrant]
-- **Encadrant Industriel** : [Nom de l'encadrant industriel]
+- **Développeur Principal** : Ayman
+- **Encadrant Académique** : 
 
 ## 📞 Support
 
@@ -283,27 +282,5 @@ Pour toute question ou problème :
 - Ouvrir une issue sur GitHub
 - Contacter l'équipe de développement
 - Consulter la documentation
-
-## 🔮 Roadmap
-
-### Court terme (3-6 mois)
-- [ ] Application mobile native
-- [ ] Cache Redis
-- [ ] Tests de charge
-- [ ] Monitoring APM
-
-### Moyen terme (6-12 mois)
-- [ ] Microservices
-- [ ] IA pour détection de fraude
-- [ ] Blockchain pour traçabilité
-- [ ] APIs Open Insurance
-
-### Long terme (1-2 ans)
-- [ ] IoT et télémétrie
-- [ ] Big Data Analytics
-- [ ] Chatbot IA
-- [ ] AR/VR pour inspection
-
----
 
 **AssurOnline** - Moderniser l'assurance avec la technologie 🚀
