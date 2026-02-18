@@ -44,12 +44,7 @@ import Help from './app/pages/Help';
 
 // Styles
 import './shared/utils/cssVariables';
-import './assets/styles/pages-shared.css';
-import './assets/styles/dashboard.css';
-import './assets/styles/dashboard-components.css';
-import './assets/styles/insurance-dashboard.css';
-import './assets/styles/enhanced-dashboard.css';
-import './assets/styles/page-transitions.css';
+// Global styles are now handled by Tailwind in index.css
 
 // Lazy loaded pages
 const AssuranceAuto = lazy(() => import('./app/pages/AssuranceAuto'));
@@ -59,28 +54,28 @@ const AssuranceMoto = lazy(() => import('./app/pages/AssuranceMoto'));
 function ConditionalHeader() {
   const location = useLocation();
   const hideHeaderPaths = [
-    '/admin/', '/client/', '/insurance/', '/dashboard', 
+    '/admin/', '/client/', '/insurance/', '/dashboard',
     '/profile', '/settings', '/help', '/devis', '/claims'
   ];
-  
-  const shouldHideHeader = hideHeaderPaths.some(path => 
+
+  const shouldHideHeader = hideHeaderPaths.some(path =>
     location.pathname.startsWith(path)
   );
-  
+
   return shouldHideHeader ? null : <Header />;
 }
 
 function ConditionalFooter() {
   const location = useLocation();
   const hideFooterPaths = [
-    '/admin/', '/client/', '/insurance/', '/dashboard', 
+    '/admin/', '/client/', '/insurance/', '/dashboard',
     '/profile', '/settings', '/help'
   ];
-  
-  const shouldHideFooter = hideFooterPaths.some(path => 
+
+  const shouldHideFooter = hideFooterPaths.some(path =>
     location.pathname.startsWith(path)
   );
-  
+
   return shouldHideFooter ? null : <Footer />;
 }
 

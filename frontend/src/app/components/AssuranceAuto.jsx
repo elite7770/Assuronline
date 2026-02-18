@@ -1,7 +1,6 @@
 import Hero from './Hero';
 import OffersSection from './OffersSection';
 import WhyChooseUsSection from './WhyChooseUsSection';
-import '../../assets/styles/assurance-auto.css';
 
 const AssuranceAuto = () => {
   const heroData = {
@@ -17,10 +16,8 @@ const AssuranceAuto = () => {
     backgroundImage: '/images/home-hero.jpg',
   };
 
-  // Removed unused ctaData demo content
-
   return (
-    <div className="assurance-page">
+    <div className="min-h-screen bg-slate-900">
       <Hero {...heroData} />
       <OffersSection />
       <WhyChooseUsSection />

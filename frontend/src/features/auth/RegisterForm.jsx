@@ -11,8 +11,6 @@ import {
   Phone,
   MapPin,
 } from 'lucide-react';
-// REFACTORED: Added missing AuthForms.css import for consistent styling
-import '../../assets/styles/auth-forms.css';
 
 function RegisterForm({ onSwitchToLogin: _onSwitchToLogin }) {
   const [formData, setFormData] = useState({
@@ -129,268 +127,138 @@ function RegisterForm({ onSwitchToLogin: _onSwitchToLogin }) {
     }
   };
 
+  // Helper to render input field
+  const renderInput = (id, label, icon, type = 'text', placeholder, colSpan = 1) => (
+    <div className={`space-y-2 ${colSpan > 1 ? `md:col-span-${colSpan}` : ''}`}>
+      <label htmlFor={id} className="flex items-center gap-2 text-sm font-medium text-slate-300">
+        {icon}
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          type={type}
+          id={id}
+          name={id}
+          value={formData[id]}
+          onChange={handleChange}
+          className={`w-full bg-slate-900/50 border rounded-xl px-4 py-3 text-white outline-none transition-all placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 ${errors[id] ? 'border-red-500/50 focus:border-red-500' : 'border-slate-700/50 focus:border-blue-500'
+            }`}
+          placeholder={placeholder}
+          disabled={isLoading}
+        />
+        {errors[id] && (
+          <div className="flex items-center gap-1 text-xs text-red-400 mt-1 absolute -bottom-6 left-0 animate-in fade-in slide-in-from-top-1">
+            <AlertCircle size={12} />
+            {errors[id]}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="auth-form">
+    <div className="w-full">
       {message && (
-        <div className={message.includes('réussie') ? 'success-message' : 'error-message-global'}>
+        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-medium animate-in fade-in slide-in-from-top-2 ${message.includes('réussie')
+            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+            : 'bg-red-500/10 text-red-400 border border-red-500/20'
+          }`}>
           {message.includes('réussie') ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
           {message}
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="firstName">
-              <User size={16} />
-              Prénom
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              className={errors.firstName ? 'error' : ''}
-              placeholder="Votre prénom"
-              disabled={isLoading}
-            />
-            {errors.firstName && (
-              <div className="error-message">
-                <AlertCircle size={16} />
-                {errors.firstName}
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="lastName">
-              <User size={16} />
-              Nom de famille
-            </label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              className={errors.lastName ? 'error' : ''}
-              placeholder="Votre nom"
-              disabled={isLoading}
-            />
-            {errors.lastName && (
-              <div className="error-message">
-                <AlertCircle size={16} />
-                {errors.lastName}
-              </div>
-            )}
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {renderInput('firstName', 'Prénom', <User size={16} className="text-blue-500" />, 'text', 'Votre prénom')}
+          {renderInput('lastName', 'Nom de famille', <User size={16} className="text-blue-500" />, 'text', 'Votre nom')}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="email">
-            <Mail size={16} />
-            Adresse email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={errors.email ? 'error' : ''}
-            placeholder="votre@email.com"
-            disabled={isLoading}
-          />
-          {errors.email && (
-            <div className="error-message">
-              <AlertCircle size={16} />
-              {errors.email}
-            </div>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {renderInput('email', 'Adresse email', <Mail size={16} className="text-blue-500" />, 'email', 'votre@email.com')}
+          {renderInput('phone', 'Téléphone', <Phone size={16} className="text-blue-500" />, 'tel', '+212 6...')}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="phone">
-            <Phone size={16} />
-            Numéro de téléphone
-          </label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className={errors.phone ? 'error' : ''}
-            placeholder="+212 6 12 34 56 78"
-            disabled={isLoading}
-          />
-          {errors.phone && (
-            <div className="error-message">
-              <AlertCircle size={16} />
-              {errors.phone}
-            </div>
-          )}
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="password">
-              <Lock size={16} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label htmlFor="password" className="flex items-center gap-2 text-sm font-medium text-slate-300">
+              <Lock size={16} className="text-blue-500" />
               Mot de passe
             </label>
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={errors.password ? 'error' : ''}
-                placeholder="Votre mot de passe"
+                className={`w-full bg-slate-900/50 border rounded-xl px-4 py-3 text-white outline-none transition-all placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 pr-10 ${errors.password ? 'border-red-500/50 focus:border-red-500' : 'border-slate-700/50 focus:border-blue-500'
+                  }`}
+                placeholder="8+ caractères"
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#64748B',
-                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {errors.password && (
-              <div className="error-message">
-                <AlertCircle size={16} />
+              <div className="flex items-center gap-1 text-xs text-red-400 mt-1 absolute -bottom-6 left-0 animate-in fade-in slide-in-from-top-1">
+                <AlertCircle size={12} />
                 {errors.password}
               </div>
             )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">
-              <Lock size={16} />
-              Confirmer le mot de passe
+          <div className="space-y-2">
+            <label htmlFor="confirmPassword" className="flex items-center gap-2 text-sm font-medium text-slate-300">
+              <Lock size={16} className="text-blue-500" />
+              Confirmation
             </label>
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={errors.confirmPassword ? 'error' : ''}
-                placeholder="Confirmez votre mot de passe"
+                className={`w-full bg-slate-900/50 border rounded-xl px-4 py-3 text-white outline-none transition-all placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 pr-10 ${errors.confirmPassword ? 'border-red-500/50 focus:border-red-500' : 'border-slate-700/50 focus:border-blue-500'
+                  }`}
+                placeholder="Répétez le mot de passe"
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#64748B',
-                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
               >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {errors.confirmPassword && (
-              <div className="error-message">
-                <AlertCircle size={16} />
+              <div className="flex items-center gap-1 text-xs text-red-400 mt-1 absolute -bottom-6 left-0 animate-in fade-in slide-in-from-top-1">
+                <AlertCircle size={12} />
                 {errors.confirmPassword}
               </div>
             )}
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="address">
-            <MapPin size={16} />
-            Adresse
-          </label>
-          <input
-            type="text"
-            id="address"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            className={errors.address ? 'error' : ''}
-            placeholder="Votre adresse complète"
-            disabled={isLoading}
-          />
-          {errors.address && (
-            <div className="error-message">
-              <AlertCircle size={16} />
-              {errors.address}
-            </div>
-          )}
-        </div>
+        <div className="space-y-6 pt-2 border-t border-slate-800">
+          {renderInput('address', 'Adresse', <MapPin size={16} className="text-blue-500" />, 'text', 'Votre adresse complète')}
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="postalCode">
-              <MapPin size={16} />
-              Code postal
-            </label>
-            <input
-              type="text"
-              id="postalCode"
-              name="postalCode"
-              value={formData.postalCode}
-              onChange={handleChange}
-              className={errors.postalCode ? 'error' : ''}
-              placeholder="20000"
-              disabled={isLoading}
-            />
-            {errors.postalCode && (
-              <div className="error-message">
-                <AlertCircle size={16} />
-                {errors.postalCode}
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="city">
-              <MapPin size={16} />
-              Ville
-            </label>
-            <input
-              type="text"
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              className={errors.city ? 'error' : ''}
-              placeholder="Casablanca"
-              disabled={isLoading}
-            />
-            {errors.city && (
-              <div className="error-message">
-                <AlertCircle size={16} />
-                {errors.city}
-              </div>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {renderInput('postalCode', 'Code postal', <MapPin size={16} className="text-blue-500" />, 'text', '20000')}
+            {renderInput('city', 'Ville', <MapPin size={16} className="text-blue-500" />, 'text', 'Casablanca')}
           </div>
         </div>
 
         <button
           type="submit"
-          className="submit-button"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
           disabled={
             isLoading ||
             !formData.firstName ||
@@ -405,20 +273,18 @@ function RegisterForm({ onSwitchToLogin: _onSwitchToLogin }) {
           }
         >
           {isLoading ? (
-            <div className="loading">
-              <div className="spinner"></div>
+            <>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               Inscription en cours...
-            </div>
+            </>
           ) : (
             <>
-              <User size={20} />
+              <User size={18} />
               Créer mon compte
             </>
           )}
         </button>
       </form>
-
-      {/* Removed security/confidentiality footer per request */}
     </div>
   );
 }

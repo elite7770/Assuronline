@@ -1,5 +1,0 @@
-/* CSS Variables needed for the features section */
-:root {
-  --gradient-brand: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 45%, #DC2626 100%);
-  --hero-bj-bg: url('../images/hero-bj.png');
-}

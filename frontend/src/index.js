@@ -1,6 +1,5 @@
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import './assets/styles/dashboard-theme.css';
 import App from './App';
 
 // Initialize theme from localStorage to ensure dark mode is applied before paint
@@ -11,7 +10,7 @@ try {
   } else if (saved === 'light') {
     document.documentElement.classList.remove('dark');
   }
-} catch {}
+} catch { }
 
 // mock API removed
 

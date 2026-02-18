@@ -34,26 +34,26 @@ const AdminDashboard = () => {
       setLoading(true);
       setError('');
       setRetryCount(retryAttempt);
-      
+
       console.log('Fetching admin dashboard data from API...', retryAttempt > 0 ? `(Retry ${retryAttempt})` : '');
-      
+
       // Add delay for retries to handle rate limiting
       if (retryAttempt > 0) {
         const delay = Math.min(1000 * Math.pow(2, retryAttempt), 10000); // Exponential backoff, max 10s
         await new Promise(resolve => setTimeout(resolve, delay));
       }
-      
+
       // Use the dedicated admin dashboard endpoint that provides real data
       const response = await dashboardAPI.getAdminOverview();
-      
+
       console.log('Admin dashboard API response:', response);
-      
+
       if (!response.data) {
         throw new Error('No data received from admin dashboard API');
       }
-      
+
       const dashboardData = response.data;
-      
+
       // Process the real data from the backend
       setData({
         devis: {
@@ -91,7 +91,7 @@ const AdminDashboard = () => {
         },
         activity: dashboardData.activity || []
       });
-      
+
     } catch (err) {
       console.error('Dashboard fetch error:', err);
       console.error('Error details:', {
@@ -99,10 +99,10 @@ const AdminDashboard = () => {
         response: err.response?.data,
         status: err.response?.status
       });
-      
+
       // Handle different error types
       let errorMessage = 'Failed to load dashboard data. ';
-      
+
       if (err.response?.status === 429) {
         errorMessage += 'Too many requests. Please wait a moment and try again.';
       } else if (err.response?.status === 401) {
@@ -116,7 +116,7 @@ const AdminDashboard = () => {
       } else {
         errorMessage += `Please check your connection and try again. (${err.message})`;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
   const handleRejectQuote = async (quoteId) => {
     const reason = prompt('Please provide a reason for rejection:');
     if (!reason) return;
-    
+
     setActionLoading(true);
     try {
       // In a real app, this would call the API
@@ -205,14 +205,14 @@ const AdminDashboard = () => {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="flex flex-col items-center space-y-4">
-          <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
-          <p className="text-gray-600">
-            {retryCount > 0 ? `Retrying... (Attempt ${retryCount + 1})` : 'Loading dashboard data...'}
+          <div className="w-14 h-14 rounded-2xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center">
+            <RefreshCw className="h-6 w-6 animate-spin text-red-400" />
+          </div>
+          <p className="text-slate-400 text-sm">
+            {retryCount > 0 ? `Nouvelle tentative... (${retryCount + 1})` : 'Chargement du tableau de bord...'}
           </p>
           {retryCount > 0 && (
-            <p className="text-sm text-gray-500">
-              Handling rate limiting with exponential backoff
-            </p>
+            <p className="text-xs text-slate-600">Gestion du rate limiting avec backoff exponentiel</p>
           )}
         </div>
       </div>
@@ -222,71 +222,39 @@ const AdminDashboard = () => {
   if (error) {
     const isRateLimited = error.includes('Too many requests');
     const isAuthError = error.includes('Authentication required') || error.includes('Access denied');
-    
     return (
-      <div className="p-6">
-        <div className={`border rounded-lg p-6 text-center ${
-          isRateLimited 
-            ? 'bg-yellow-50 border-yellow-200' 
-            : isAuthError 
-            ? 'bg-orange-50 border-orange-200'
-            : 'bg-red-50 border-red-200'
-        }`}>
-          <AlertTriangle className={`h-12 w-12 mx-auto mb-4 ${
-            isRateLimited 
-              ? 'text-yellow-500' 
-              : isAuthError 
-              ? 'text-orange-500'
-              : 'text-red-500'
-          }`} />
-          <h3 className={`text-lg font-semibold mb-2 ${
-            isRateLimited 
-              ? 'text-yellow-800' 
-              : isAuthError 
-              ? 'text-orange-800'
-              : 'text-red-800'
-          }`}>
-            {isRateLimited ? 'Rate Limited' : isAuthError ? 'Authentication Error' : 'Error Loading Dashboard'}
+      <div className="flex items-center justify-center min-h-96 p-6">
+        <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-8 text-center max-w-md w-full">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${isRateLimited ? 'bg-amber-500/20' : isAuthError ? 'bg-orange-500/20' : 'bg-red-500/20'
+            }`}>
+            <AlertTriangle className={`h-7 w-7 ${isRateLimited ? 'text-amber-400' : isAuthError ? 'text-orange-400' : 'text-red-400'
+              }`} />
+          </div>
+          <h3 className="text-white font-semibold text-lg mb-2">
+            {isRateLimited ? 'Trop de requêtes' : isAuthError ? 'Erreur d\'authentification' : 'Erreur de chargement'}
           </h3>
-          <p className={`mb-4 ${
-            isRateLimited 
-              ? 'text-yellow-600' 
-              : isAuthError 
-              ? 'text-orange-600'
-              : 'text-red-600'
-          }`}>
-            {error}
-          </p>
+          <p className="text-slate-400 text-sm mb-6">{error}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => fetchDashboardData()}
-              className={`px-4 py-2 rounded-lg text-white transition-colors ${
-                isRateLimited 
-                  ? 'bg-yellow-600 hover:bg-yellow-700' 
-                  : isAuthError 
-                  ? 'bg-orange-600 hover:bg-orange-700'
-                  : 'bg-red-600 hover:bg-red-700'
-              }`}
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-medium transition-colors"
             >
-              {isRateLimited ? 'Retry Now' : 'Try Again'}
+              Réessayer
             </button>
             {isRateLimited && (
               <button
-                onClick={() => {
-                  // Wait 30 seconds before retrying
-                  setTimeout(() => fetchDashboardData(), 30000);
-                }}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                onClick={() => setTimeout(() => fetchDashboardData(), 30000)}
+                className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-medium transition-colors"
               >
-                Wait 30s & Retry
+                Attendre 30s
               </button>
             )}
             {isAuthError && (
               <button
                 onClick={() => window.location.href = '/login'}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
               >
-                Go to Login
+                Se connecter
               </button>
             )}
           </div>
@@ -312,9 +280,9 @@ const AdminDashboard = () => {
   const conversionRate = totalDevis > 0 ? ((totalPolicies / totalDevis) * 100).toFixed(1) : 0;
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
-      {/* Enhanced KPI Cards */}
-      <div className="dashboard-kpi-grid">
+    <div className="space-y-6 animate-fade-in">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <EnhancedKPICard
           title="Total Devis"
           value={totalDevis.toLocaleString()}
@@ -324,7 +292,7 @@ const AdminDashboard = () => {
           miniChart={true}
           trendData={[120, 135, 148, 162, 175, 189, 201, 215, 228, 245, 267, 289]}
           formatValue={(val) => val}
-          onClick={() => {}}
+          onClick={() => { }}
         />
         <EnhancedKPICard
           title="Active Policies"
@@ -335,7 +303,7 @@ const AdminDashboard = () => {
           miniChart={true}
           trendData={[45, 52, 58, 63, 67, 71, 75, 78, 82, 85, 89, 92]}
           formatValue={(val) => val}
-          onClick={() => {}}
+          onClick={() => { }}
         />
         <EnhancedKPICard
           title="Total Revenue"
@@ -346,7 +314,7 @@ const AdminDashboard = () => {
           miniChart={true}
           trendData={[2.1, 2.3, 2.5, 2.7, 2.9, 3.1, 3.3, 3.5, 3.7, 3.9, 4.1, 4.3]}
           formatValue={(val) => val}
-          onClick={() => {}}
+          onClick={() => { }}
         />
         <EnhancedKPICard
           title="Active Claims"
@@ -357,12 +325,12 @@ const AdminDashboard = () => {
           miniChart={true}
           trendData={[8, 7, 6, 5, 4, 3, 2, 3, 4, 5, 6, 7]}
           formatValue={(val) => val}
-          onClick={() => {}}
+          onClick={() => { }}
         />
       </div>
 
       {/* Charts */}
-      <div className="dashboard-chart-grid">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ChartCard
           title="Monthly Revenue Trend"
           chartType="area"
@@ -374,16 +342,16 @@ const AdminDashboard = () => {
           {monthlyRevenue && monthlyRevenue.length > 0 && (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyRevenue}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#666" />
-                <YAxis tickFormatter={(value) => `${value / 1000}K`} stroke="#666" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <XAxis dataKey="month" stroke="#475569" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <YAxis tickFormatter={(value) => `${value / 1000}K`} stroke="#475569" tick={{ fill: '#94a3b8', fontSize: 11 }} />
                 <Tooltip
-                  formatter={(value) => [`${Number(value).toLocaleString()} MAD`, 'Revenue']}
+                  formatter={(value) => [`${Number(value).toLocaleString()} MAD`, 'Revenus']}
                   contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#1e293b',
+                    border: '1px solid #334155',
+                    borderRadius: '12px',
+                    color: '#f1f5f9',
                   }}
                 />
                 <Area
@@ -415,16 +383,16 @@ const AdminDashboard = () => {
           {data?.charts?.policyGrowth && data.charts.policyGrowth.length > 0 && (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.charts.policyGrowth}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#666" />
-                <YAxis stroke="#666" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <XAxis dataKey="month" stroke="#475569" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <YAxis stroke="#475569" tick={{ fill: '#94a3b8', fontSize: 11 }} />
                 <Tooltip
-                  formatter={(value) => [value, 'Policies']}
+                  formatter={(value) => [value, 'Polices']}
                   contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#1e293b',
+                    border: '1px solid #334155',
+                    borderRadius: '12px',
+                    color: '#f1f5f9',
                   }}
                 />
                 <Line
@@ -440,13 +408,14 @@ const AdminDashboard = () => {
           )}
         </ChartCard>
 
-        <ChartCard 
-          title="Claims by Type" 
-          chartType="pie" 
-          subtitle="Breakdown by claim type"
+        <ChartCard
+          title="Sinistres par Type"
+          chartType="pie"
+          subtitle="Répartition par type de sinistre"
           isEmpty={!claimsStats || claimsStats.length === 0}
-          emptyMessage="No Claims Data"
-          emptyDescription="Claims data will appear here once claims are submitted"
+          emptyMessage="Aucune donnée de sinistre"
+          emptyDescription="Les données apparaîtront ici une fois les sinistres soumis"
+          contentHeight="h-72"
         >
           {claimsStats && claimsStats.length > 0 && (
             <ResponsiveContainer width="100%" height="100%">
@@ -467,10 +436,10 @@ const AdminDashboard = () => {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#1e293b',
+                    border: '1px solid #334155',
+                    borderRadius: '12px',
+                    color: '#f1f5f9',
                   }}
                 />
               </PieChart>
@@ -479,17 +448,65 @@ const AdminDashboard = () => {
         </ChartCard>
 
         <ChartCard
-          title="Conversion Rate"
+          title="Taux de Conversion"
           chartType="bar"
-          subtitle="Devis vers police conversion performance"
+          subtitle="Performance de conversion devis → police"
+          contentHeight="h-auto"
         >
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="dashboard-conversion-rate">{conversionRate}%</div>
-              <div className="dashboard-conversion-subtitle">Devis vers Police Conversion</div>
-              <div className="dashboard-conversion-trend">
-                <TrendingUp className="dashboard-conversion-trend-icon" />
-                <span className="dashboard-conversion-trend-text">+5.2% from last month</span>
+          <div className="flex flex-col items-center justify-center h-full gap-4 py-2">
+            {/* Circular gauge */}
+            <div className="relative w-36 h-36">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                {/* Background track */}
+                <circle cx="50" cy="50" r="38" stroke="#1e293b" strokeWidth="8" fill="none" />
+                {/* Progress arc */}
+                <circle
+                  cx="50" cy="50" r="38"
+                  stroke={Number(conversionRate) >= 80 ? '#10b981' : Number(conversionRate) >= 50 ? '#f59e0b' : '#ef4444'}
+                  strokeWidth="8"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 38}`}
+                  strokeDashoffset={`${2 * Math.PI * 38 * (1 - Math.min(Number(conversionRate), 100) / 100)}`}
+                  style={{ transition: 'stroke-dashoffset 1s ease' }}
+                />
+              </svg>
+              {/* Center label */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className={`text-2xl font-bold ${Number(conversionRate) >= 80 ? 'text-emerald-400' : Number(conversionRate) >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
+                  {conversionRate}%
+                </span>
+                <span className="text-slate-500 text-xs mt-0.5">taux</span>
+              </div>
+            </div>
+
+            {/* Breakdown stats */}
+            <div className="w-full grid grid-cols-2 gap-2 px-2">
+              <div className="bg-slate-700/40 rounded-xl p-3 text-center">
+                <p className="text-slate-500 text-xs mb-1">Devis</p>
+                <p className="text-white font-bold text-lg">{totalDevis.toLocaleString()}</p>
+              </div>
+              <div className="bg-slate-700/40 rounded-xl p-3 text-center">
+                <p className="text-slate-500 text-xs mb-1">Polices</p>
+                <p className="text-white font-bold text-lg">{totalPolicies.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Progress bar + trend */}
+            <div className="w-full px-2 space-y-2">
+              <div className="w-full bg-slate-700/50 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ${Number(conversionRate) >= 80 ? 'bg-emerald-500' : Number(conversionRate) >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                  style={{ width: `${Math.min(Number(conversionRate), 100)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 text-xs">0%</span>
+                <div className="flex items-center gap-1 text-emerald-400">
+                  <TrendingUp className="w-3 h-3" />
+                  <span className="text-xs font-medium">+5.2% ce mois</span>
+                </div>
+                <span className="text-slate-500 text-xs">100%</span>
               </div>
             </div>
           </div>
@@ -497,23 +514,21 @@ const AdminDashboard = () => {
       </div>
 
       {/* Tables + Activity */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        <div className="xl:col-span-3 space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+        <div className="xl:col-span-3 space-y-4">
           {/* Recent Quotes */}
-          <div className="card hover-lift">
-            <div className="p-6">
-              <div className="dashboard-section-title">
-                <div className="dashboard-section-icon dashboard-section-icon--blue">
-                  <FileText className="h-4 w-4 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="dashboard-section-title-text">Recent Quotes</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Manage and review insurance quotes
-                  </p>
-                </div>
+          <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-700/50 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <FileText className="h-4 w-4 text-blue-400" />
               </div>
-              
+              <div>
+                <h3 className="text-white font-semibold text-sm">Devis Récents</h3>
+                <p className="text-slate-500 text-xs mt-0.5">Gérer et examiner les devis d'assurance</p>
+              </div>
+            </div>
+            <div className="p-5">
+
               <div className="dashboard-content-area">
                 {loading ? (
                   <div className="space-y-3">
@@ -524,62 +539,55 @@ const AdminDashboard = () => {
                     ))}
                   </div>
                 ) : (data?.tables?.recentQuotes || []).length === 0 ? (
-                  <div className="dashboard-table-empty-state">
-                    <div className="dashboard-table-empty-icon">
-                      <FileText className="w-8 h-8" />
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 rounded-xl bg-slate-700/60 flex items-center justify-center mx-auto mb-3">
+                      <FileText className="w-6 h-6 text-slate-500" />
                     </div>
-                    <h3 className="dashboard-table-empty-title">No Recent Quotes</h3>
-                    <p className="dashboard-table-empty-description">
-                      New quotes will appear here once customers submit them
-                    </p>
+                    <h3 className="text-slate-400 font-medium text-sm">Aucun devis récent</h3>
+                    <p className="text-slate-600 text-xs mt-1">Les nouveaux devis apparaîtront ici</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {(data?.tables?.recentQuotes || []).map((quote, index) => (
-                      <div 
+                      <div
                         key={quote.id || index}
-                        className="group p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 hover:shadow-lg"
+                        className="group p-4 bg-slate-700/30 border border-slate-600/40 rounded-xl hover:border-blue-500/40 hover:bg-slate-700/50 transition-all duration-200"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-4 flex-1 min-w-0">
                             <div className="flex-shrink-0">
-                              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                                <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                              <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                                <FileText className="w-5 h-5 text-blue-400" />
                               </div>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center space-x-2 mb-2">
-                                <h4 className="text-base font-semibold text-gray-900 dark:text-white">
+                                <h4 className="text-sm font-semibold text-white">
                                   {quote.devis_number || `QUO-${quote.id}`}
                                 </h4>
-                                <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
-                                  quote.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                  quote.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                  quote.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                  'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                }`}>
+                                <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${quote.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' :
+                                  quote.status === 'pending' ? 'bg-amber-500/20 text-amber-400' :
+                                    quote.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                      'bg-slate-600 text-slate-300'
+                                  }`}>
                                   {quote.status || 'pending'}
                                 </span>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                              <div className="flex gap-4 mt-2">
                                 <div>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Customer</p>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                    {quote.customer || 'Unknown'}
-                                  </p>
+                                  <p className="text-xs text-slate-500 mb-0.5">Client</p>
+                                  <p className="text-xs font-medium text-slate-300">{quote.customer || 'Inconnu'}</p>
                                 </div>
                                 <div>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Premium</p>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                    {Number(quote.final_premium || 0).toLocaleString()} MAD
-                                  </p>
+                                  <p className="text-xs text-slate-500 mb-0.5">Prime</p>
+                                  <p className="text-xs font-medium text-slate-300">{Number(quote.final_premium || 0).toLocaleString()} MAD</p>
                                 </div>
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center space-x-2 ml-4">
-                            <button 
+                            <button
                               onClick={() => handleViewQuote(quote)}
                               className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
                               title="View Quote Details"
@@ -587,7 +595,7 @@ const AdminDashboard = () => {
                               <Eye className="w-4 h-4" />
                             </button>
                             {quote.status === 'pending' && (
-                              <button 
+                              <button
                                 onClick={() => handleApproveQuote(quote.id)}
                                 className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
                                 title="Approve Quote"
@@ -596,7 +604,7 @@ const AdminDashboard = () => {
                               </button>
                             )}
                             {quote.status === 'pending' && (
-                              <button 
+                              <button
                                 onClick={() => handleRejectQuote(quote.id)}
                                 className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
                                 title="Reject Quote"
@@ -608,11 +616,11 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     ))}
-                    
+
                     {(data?.tables?.recentQuotes || []).length > 3 && (
-                      <div className="text-center pt-4">
-                        <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors duration-200">
-                          View All Quotes ({(data?.tables?.recentQuotes || []).length})
+                      <div className="text-center pt-3">
+                        <button className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                          Voir tous les devis ({(data?.tables?.recentQuotes || []).length})
                         </button>
                       </div>
                     )}
@@ -623,109 +631,75 @@ const AdminDashboard = () => {
           </div>
 
           {/* Recent Policies */}
-          <div className="card hover-lift">
-            <div className="p-6">
-              <div className="dashboard-section-title">
-                <div className="dashboard-section-icon dashboard-section-icon--green">
-                  <Shield className="h-4 w-4 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="dashboard-section-title-text">Recent Policies</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Monitor active insurance policies
-                  </p>
-                </div>
+          <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-700/50 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                <Shield className="h-4 w-4 text-emerald-400" />
               </div>
-              
-              <div className="dashboard-content-area">
+              <div>
+                <h3 className="text-white font-semibold text-sm">Polices Récentes</h3>
+                <p className="text-slate-500 text-xs mt-0.5">Surveiller les polices d'assurance actives</p>
+              </div>
+            </div>
+            <div className="p-5">
+
+              <div>
                 {loading ? (
                   <div className="space-y-3">
                     {[...Array(3)].map((_, i) => (
                       <div key={i} className="animate-pulse">
-                        <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div className="h-20 bg-slate-700/40 rounded-xl"></div>
                       </div>
                     ))}
                   </div>
                 ) : (data?.tables?.recentPolicies || []).length === 0 ? (
-                  <div className="dashboard-table-empty-state">
-                    <div className="dashboard-table-empty-icon">
-                      <Shield className="w-8 h-8" />
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 rounded-xl bg-slate-700/60 flex items-center justify-center mx-auto mb-3">
+                      <Shield className="w-6 h-6 text-slate-500" />
                     </div>
-                    <h3 className="dashboard-table-empty-title">No Recent Policies</h3>
-                    <p className="dashboard-table-empty-description">
-                      New policies will appear here once they are created
-                    </p>
+                    <h3 className="text-slate-400 font-medium text-sm">Aucune police récente</h3>
+                    <p className="text-slate-600 text-xs mt-1">Les nouvelles polices apparaîtront ici</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {(data?.tables?.recentPolicies || []).map((policy, index) => (
-                      <div 
+                      <div
                         key={policy.id || index}
-                        className="group p-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-green-300 dark:hover:border-green-600 transition-all duration-200 hover:shadow-lg"
+                        className="group p-4 bg-slate-700/30 border border-slate-600/40 rounded-xl hover:border-emerald-500/40 hover:bg-slate-700/50 transition-all duration-200"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start space-x-4 flex-1 min-w-0">
-                            <div className="flex-shrink-0">
-                              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                                <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
-                              </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Shield className="w-5 h-5 text-emerald-400" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <h4 className="text-base font-semibold text-gray-900 dark:text-white">
-                                  {policy.policy_number || `POL-${policy.id}`}
-                                </h4>
-                                <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
-                                  policy.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                  policy.status === 'expired' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                  policy.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                  'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                }`}>
-                                  {policy.status || 'pending'}
-                                </span>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="text-sm font-semibold text-white">{policy.policy_number || `POL-${policy.id}`}</h4>
+                                <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${policy.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' :
+                                  policy.status === 'expired' ? 'bg-red-500/20 text-red-400' :
+                                    policy.status === 'pending' ? 'bg-amber-500/20 text-amber-400' :
+                                      'bg-slate-600 text-slate-300'
+                                  }`}>{policy.status || 'pending'}</span>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                                <div>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Customer</p>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                    {policy.customer_name || 'Unknown'}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Premium</p>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                    {Number(policy.premium || 0).toLocaleString()} MAD
-                                  </p>
-                                </div>
+                              <div className="flex gap-4">
+                                <div><p className="text-xs text-slate-500">Client</p><p className="text-xs font-medium text-slate-300">{policy.customer_name || 'Inconnu'}</p></div>
+                                <div><p className="text-xs text-slate-500">Prime</p><p className="text-xs font-medium text-slate-300">{Number(policy.premium || 0).toLocaleString()} MAD</p></div>
                               </div>
                             </div>
                           </div>
-                          
-                          <div className="flex items-center space-x-2 ml-4">
-                            <button 
-                              className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                              title="View Policy Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button 
-                              className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200"
-                              title="Manage Policy"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
+                          <div className="flex items-center gap-1 ml-3">
+                            <button className="p-1.5 text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all" title="Voir">
+                              <Eye className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
                       </div>
                     ))}
-                    
+
                     {(data?.tables?.recentPolicies || []).length > 3 && (
-                      <div className="text-center pt-4">
-                        <button className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 font-medium transition-colors duration-200">
-                          View All Policies ({(data?.tables?.recentPolicies || []).length})
+                      <div className="text-center pt-3">
+                        <button className="text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+                          Voir toutes les polices ({(data?.tables?.recentPolicies || []).length})
                         </button>
                       </div>
                     )}
@@ -736,7 +710,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <ActivityFeed
             title="Recent Activity"
             items={(data?.activity || []).map((a) => ({
@@ -753,112 +727,102 @@ const AdminDashboard = () => {
 
       {/* Quote Details Modal */}
       {showQuoteModal && selectedQuote && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Quote Details - {selectedQuote.devis_number}</h3>
-              <button
-                onClick={() => setShowQuoteModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <XCircle className="h-6 w-6" />
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 border border-slate-700/60 rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-white font-semibold text-lg">Détails du Devis — {selectedQuote.devis_number}</h3>
+              <button onClick={() => setShowQuoteModal(false)} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all">
+                <XCircle className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Customer</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedQuote.customer}</p>
+                <div className="bg-slate-700/40 rounded-xl p-3">
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Client</label>
+                  <p className="text-sm text-white font-medium">{selectedQuote.customer}</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedQuote.customer_email}</p>
+                <div className="bg-slate-700/40 rounded-xl p-3">
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Email</label>
+                  <p className="text-sm text-white font-medium">{selectedQuote.customer_email}</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Vehicle</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedQuote.vehicle}</p>
+                <div className="bg-slate-700/40 rounded-xl p-3">
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Véhicule</label>
+                  <p className="text-sm text-white font-medium">{selectedQuote.vehicle}</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Status</label>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    selectedQuote.status === 'approved' ? 'bg-green-100 text-green-800' :
+                <div className="bg-slate-700/40 rounded-xl p-3">
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Statut</label>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedQuote.status === 'approved' ? 'bg-green-100 text-green-800' :
                     selectedQuote.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    selectedQuote.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                      selectedQuote.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                    }`}>
                     {selectedQuote.status}
                   </span>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Final Premium</label>
-                  <p className="mt-1 text-sm text-gray-900">{Number(selectedQuote.final_premium || 0).toLocaleString()} MAD</p>
+                <div className="bg-slate-700/40 rounded-xl p-3">
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Prime Finale</label>
+                  <p className="text-sm text-white font-medium">{Number(selectedQuote.final_premium || 0).toLocaleString()} MAD</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Monthly Premium</label>
-                  <p className="mt-1 text-sm text-gray-900">{Number(selectedQuote.monthly_premium || 0).toLocaleString()} MAD</p>
+                <div className="bg-slate-700/40 rounded-xl p-3">
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Prime Mensuelle</label>
+                  <p className="text-sm text-white font-medium">{Number(selectedQuote.monthly_premium || 0).toLocaleString()} MAD</p>
                 </div>
               </div>
-              
+
               {selectedQuote.admin_comment && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Admin Comment</label>
-                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded">{selectedQuote.admin_comment}</p>
+                <div className="bg-slate-700/40 rounded-xl p-3">
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Commentaire Admin</label>
+                  <p className="text-sm text-slate-300">{selectedQuote.admin_comment}</p>
                 </div>
               )}
-              
+
               {selectedQuote.calculation_details && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Calculation Details</label>
-                  <div className="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded">
+                <div className="bg-slate-700/40 rounded-xl p-3">
+                  <label className="block text-xs font-medium text-slate-400 mb-2">Détails de Calcul</label>
+                  <div className="text-xs text-slate-300 font-mono overflow-auto max-h-32">
                     <pre className="whitespace-pre-wrap">{JSON.stringify(JSON.parse(selectedQuote.calculation_details), null, 2)}</pre>
                   </div>
                 </div>
               )}
             </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
+
+            <div className="flex justify-end gap-2 mt-6 pt-5 border-t border-slate-700/50">
               {selectedQuote.status === 'pending' && (
                 <>
                   <button
-                    onClick={() => {
-                      handleApproveQuote(selectedQuote.id);
-                      setShowQuoteModal(false);
-                    }}
+                    onClick={() => { handleApproveQuote(selectedQuote.id); setShowQuoteModal(false); }}
                     disabled={actionLoading}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2 transition-colors"
                   >
                     <CheckCircle className="h-4 w-4" />
-                    <span>Approve</span>
+                    <span>Approuver</span>
                   </button>
                   <button
-                    onClick={() => {
-                      handleRejectQuote(selectedQuote.id);
-                      setShowQuoteModal(false);
-                    }}
+                    onClick={() => { handleRejectQuote(selectedQuote.id); setShowQuoteModal(false); }}
                     disabled={actionLoading}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2 transition-colors"
                   >
                     <XCircle className="h-4 w-4" />
-                    <span>Reject</span>
+                    <span>Rejeter</span>
                   </button>
                 </>
               )}
               <button
                 onClick={() => handleSendEmail(selectedQuote.id, selectedQuote.customer_email)}
                 disabled={actionLoading}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center space-x-2"
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2 transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                <span>Send Email</span>
+                <span>Envoyer Email</span>
               </button>
               <button
                 onClick={() => handleGeneratePDF(selectedQuote.id)}
                 disabled={actionLoading}
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 flex items-center space-x-2"
+                className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-xl text-sm font-medium disabled:opacity-50 flex items-center gap-2 transition-colors"
               >
                 <Download className="h-4 w-4" />
-                <span>Generate PDF</span>
+                <span>Générer PDF</span>
               </button>
             </div>
           </div>

@@ -1,263 +1,243 @@
-# 🏢 AssurOnline - Plateforme de Gestion d'Assurances
+<div align="center">
 
-## 📋 Description
+# 🛡️ AssurOnline
 
-AssurOnline est une plateforme web complète de gestion d'assurances développée dans le cadre d'un projet de fin d'études. Elle offre une solution moderne, sécurisée et évolutive pour la gestion du cycle de vie complet des assurances.
+**Plateforme de gestion d'assurances auto & moto — moderne, sécurisée et évolutive**
 
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://reactjs.org)
+[![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)](https://mysql.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+</div>
 
-## ✨ Fonctionnalités Principales
+---
 
-## 📸 Galerie
+## 📸 Aperçu
 
 ### Page d'Accueil
-![Page d'Accueil](docs/screenshots/home-page.png)
+> 📷 *Capture d'écran à ajouter — `docs/screenshots/home.png`*
 
-### Page de Connexion
-![Page de Connexion](docs/screenshots/login-page.png)
+<!-- ![Page d'Accueil](docs/screenshots/home.png) -->
 
-### 🔐 Authentification et Autorisation
-- Système d'authentification JWT sécurisé
-- Gestion des rôles (Client, Agent, Administrateur)
-- Contrôle d'accès basé sur les rôles (RBAC)
+---
 
-### 📊 Gestion des Devis
-- Création de devis automatisée
-- Calcul automatique des primes
-- Génération de PDF professionnels
-- Conversion devis → police
+### Tableau de Bord Admin
+> 📷 *Capture d'écran à ajouter — `docs/screenshots/admin-dashboard.png`*
 
-### 📄 Gestion des Polices
-- Suivi du cycle de vie des polices
-- Renouvellement automatique
-- Modification et résiliation
-- Historique complet
+<!-- ![Admin Dashboard](docs/screenshots/admin-dashboard.png) -->
 
-### 🚨 Gestion des Sinistres
-- Déclaration de sinistres en ligne
-- Upload de documents justificatifs
-- Workflow de traitement
-- Suivi en temps réel
+---
 
-### 💳 Gestion des Paiements
-- Enregistrement des transactions
-- Génération de reçus automatiques
-- Rappels de paiement
-- Gestion des remboursements
+### Espace Client
+> 📷 *Capture d'écran à ajouter — `docs/screenshots/client-dashboard.png`*
 
-## 🛠️ Technologies Utilisées
+<!-- ![Espace Client](docs/screenshots/client-dashboard.png) -->
+
+---
+
+### Gestion des Devis
+> 📷 *Capture d'écran à ajouter — `docs/screenshots/devis.png`*
+
+<!-- ![Devis](docs/screenshots/devis.png) -->
+
+---
+
+### Gestion des Sinistres
+> 📷 *Capture d'écran à ajouter — `docs/screenshots/sinistres.png`*
+
+<!-- ![Sinistres](docs/screenshots/sinistres.png) -->
+
+---
+
+## ✨ Fonctionnalités
+
+| Module | Description |
+|--------|-------------|
+| 🔐 **Authentification** | JWT sécurisé, gestion des rôles (Client / Admin), RBAC |
+| 📊 **Devis** | Création automatisée, calcul des primes, génération PDF, conversion → police |
+| 📄 **Polices** | Suivi du cycle de vie, renouvellement, modification, historique |
+| 🚨 **Sinistres** | Déclaration en ligne, upload de documents, workflow de traitement |
+| 💳 **Paiements** | Enregistrement des transactions, génération de reçus |
+| 📬 **Notifications** | Alertes en temps réel, rappels de paiement |
+| 🛠️ **Admin Dashboard** | KPI, graphiques, taux de conversion, gestion des utilisateurs |
+
+---
+
+## 🛠️ Stack Technique
 
 ### Backend
-- **Node.js 18+** - Runtime JavaScript
-- **Express.js** - Framework web
-- **MySQL 8** - Base de données relationnelle
-- **Knex.js** - Query builder et migrations
-- **JWT** - Authentification
-- **Zod** - Validation des données
+- **Node.js 18** + **Express.js** — API REST
+- **MySQL 8** + **Knex.js** — Base de données & migrations
+- **JWT** — Authentification
+- **Zod** — Validation des données
+- **Nodemailer** — Envoi d'emails
+- **PDFKit / Puppeteer** — Génération de PDF
+- **Winston** — Logging
+- **Helmet** + **express-rate-limit** — Sécurité
 
 ### Frontend
-- **React 18** - Bibliothèque UI
-- **React Router** - Routage
-- **Tailwind CSS** - Framework CSS
-- **Framer Motion** - Animations
-- **React Hook Form** - Gestion des formulaires
+- **React 18** + **React Router v6**
+- **Tailwind CSS** — Styling
+- **Framer Motion** — Animations
+- **Recharts** — Graphiques
+- **Lucide React** — Icônes
+- **Axios** — Requêtes HTTP
 
 ### DevOps
-- **Docker** - Conteneurisation
-- **Jest** - Tests unitaires
-- **ESLint/Prettier** - Qualité du code
-- **GitHub Actions** - CI/CD
+- **Docker** + **Docker Compose** — Conteneurisation
+- **Jest** + **Supertest** — Tests
+- **ESLint** + **Prettier** — Qualité du code
 
-## 🚀 Installation et Démarrage
+---
+
+## 🚀 Démarrage Rapide
 
 ### Prérequis
 - Node.js 18+
 - MySQL 8+
-- Docker (optionnel)
+- npm 9+
 
 ### Installation
-```bash
-# Cloner le dépôt
-git clone https://github.com/elite7770/assuronline-auto-moto.git
-cd assuronline-auto-moto
 
-# Installer les dépendances
+```bash
+# 1. Cloner le dépôt
+git clone https://github.com/elite7770/assuronline.git
+cd assuronline
+
+# 2. Installer toutes les dépendances (racine + backend + frontend)
 npm install
 
-# Configuration de la base de données
+# 3. Configurer l'environnement backend
 cp backend/.env.example backend/.env
-# Éditer backend/.env avec vos paramètres
+# → Éditer backend/.env avec vos paramètres DB, JWT_SECRET, SMTP...
 
-# Exécuter les migrations
+# 4. Créer la base de données et exécuter les migrations
 npm run migrate:latest
 
-# Démarrer l'application
+# 5. Créer le compte administrateur par défaut
+npm run seed:admin
+
+# 6. Lancer en mode développement
 npm run dev
 ```
 
-### Avec Docker
-```bash
-# Démarrer tous les services
-docker-compose up --build
+L'application sera disponible sur :
+- **Frontend** → http://localhost:5173
+- **Backend API** → http://localhost:3001
+- **API Docs (Swagger)** → http://localhost:3001/api/v1/docs
 
-# Accès aux services
-# Frontend: http://localhost:3000
-# Backend: http://localhost:3001
-# API Docs: http://localhost:3001/api-docs
+### Avec Docker
+
+```bash
+docker-compose up --build
 ```
+
+---
+
+## 🔑 Compte Admin par Défaut
+
+| Champ | Valeur |
+|-------|--------|
+| Email | `admin@assuronline.com` |
+| Mot de passe | `admin123` |
+
+> ⚠️ Changez ce mot de passe immédiatement en production.
+
+---
 
 ## 📁 Structure du Projet
 
 ```
-assuronline-auto-moto/
-├── backend/                 # API Node.js/Express
+assuronline/
+├── backend/                    # API Node.js/Express
 │   ├── src/
-│   │   ├── core/           # Logique métier
-│   │   ├── features/       # Modules fonctionnels
-│   │   ├── shared/         # Utilitaires partagés
-│   │   └── infrastructure/ # Intégrations externes
-│   ├── tests/              # Tests backend
-│   └── migrations/         # Migrations base de données
-├── frontend/               # Application React
-│   ├── src/
-│   │   ├── app/           # Composants d'application
-│   │   ├── features/      # Modules fonctionnels
-│   │   └── shared/        # Composants partagés
-│   └── public/            # Assets statiques
-├── docs/                   # Documentation
-├── scripts/                # Scripts utilitaires
-└── docker-compose.yml      # Orchestration Docker
+│   │   ├── features/           # Modules métier (auth, quotes, policies…)
+│   │   ├── shared/             # Middlewares, utilitaires partagés
+│   │   └── infrastructure/     # DB, services externes
+│   ├── migrations/             # Migrations Knex
+│   ├── scripts/                # Seed & utilitaires
+│   └── tests/                  # Tests backend
+├── frontend/                   # Application React
+│   └── src/
+│       ├── app/                # Pages, composants globaux, layout
+│       ├── features/           # Modules UI (dashboard, auth, claims…)
+│       └── shared/             # Composants, hooks, services réutilisables
+├── docs/                       # Documentation & architecture
+├── scripts/                    # Scripts utilitaires racine
+└── docker-compose.yml
 ```
 
-## 📊 Architecture
-
-### Architecture en Couches
-- **Présentation** : React SPA
-- **API** : Express.js REST API
-- **Domaine** : Services métier
-- **Infrastructure** : Base de données, services externes
-
-### Sécurité
-- Authentification JWT
-- Validation des données (Zod)
-- Headers de sécurité (Helmet)
-- Conformité RGPD
-
-## 🧪 Tests
-
-```bash
-# Tests unitaires
-npm run test
-
-# Tests d'intégration
-npm run test:integration
-
-# Tests E2E
-npm run test:e2e
-
-# Couverture de tests
-npm run test:coverage
-```
-
-## 📈 Performance
-
-- **Temps de réponse API** : < 300ms
-- **Temps de chargement** : < 2 secondes
-- **Couverture de tests** : 85%
-- **Uptime** : 99.5%
-
-## 📚 Documentation
-
-- **API Documentation** : [OpenAPI/Swagger](http://localhost:3001/api-docs)
-- **Rapport PFE** : `RAPPORT_PFE_ASSURONLINE_ENRICHI.md`
-- **Guide d'installation** : `docs/README.md`
-- **Architecture** : `docs/architecture.md`
+---
 
 ## 🔧 Scripts Disponibles
 
 ```bash
-# Développement
-npm run dev              # Démarrer en mode développement
-npm run build            # Build de production
-npm run start            # Démarrer en production
+# ── Développement ──────────────────────────────────────────
+npm run dev              # Démarre frontend + backend en parallèle
+npm run dev:frontend     # Frontend uniquement (Vite)
+npm run dev:backend      # Backend uniquement (nodemon)
 
-# Base de données
+# ── Base de données ────────────────────────────────────────
 npm run migrate:latest   # Exécuter les migrations
-npm run migrate:rollback # Annuler les migrations
-npm run seed:admin       # Créer un admin par défaut
+npm run migrate:rollback # Annuler la dernière migration
+npm run seed:admin       # Créer l'admin par défaut
 
-# Tests
-npm run test             # Tests unitaires
-npm run test:watch       # Tests en mode watch
-npm run test:coverage    # Couverture de tests
+# ── Tests ──────────────────────────────────────────────────
+npm run test             # Tests unitaires (Jest)
 
-# Qualité
-npm run lint             # Linting ESLint
-npm run format           # Formatage Prettier
-npm run lint:fix         # Corriger automatiquement
-
-# Documentation
-npm run docs:generate    # Générer la documentation
-npm run docs:serve       # Servir la documentation
-
-# Utilitaires
-npm run test:workflow    # Tester le workflow complet
-npm run seed:users       # Créer des comptes de test
-npm run docx             # Générer la documentation Word
+# ── Qualité du code ────────────────────────────────────────
+npm run lint             # ESLint
+npm run format           # Prettier
 ```
 
-## 🌟 Fonctionnalités Avancées
+---
 
-### Workflow DevOps
-- Pipeline CI/CD avec GitHub Actions
-- Tests automatisés
-- Déploiement conteneurisé
-- Monitoring et alertes
+## 🔐 Variables d'Environnement
 
-### Conformité Réglementaire
-- RGPD (Règlement Général sur la Protection des Données)
-- eIDAS (Identification électronique)
-- PCI DSS (Sécurité des paiements)
-- ISO 27001 (Sécurité de l'information)
+Copiez `backend/.env.example` → `backend/.env` et renseignez :
 
-### Évolutivité
-- Architecture modulaire
-- API-first design
-- Prêt pour microservices
-- Cache Redis (à implémenter)
-
-## 🚀 Déploiement
-
-### Production
-```bash
-# Build de production
-npm run build
-
-# Démarrage en production
-npm run start
-
-# Avec Docker
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Variables d'Environnement
 ```env
 # Base de données
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=assuronline
-DB_USER=assur
+DB_USER=root
 DB_PASSWORD=your_password
 
 # JWT
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_super_secret_key_here
 
-# Email
+# Email (SMTP)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=your_email
-SMTP_PASS=your_password
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+
+# App
+PORT=3001
+CORS_ORIGINS=http://localhost:5173
 ```
+
+---
+
+## 🧪 Tests
+
+```bash
+cd backend
+npm run test
+```
+
+---
+
+## 📚 Documentation
+
+- **API Swagger** : http://localhost:3001/api/v1/docs (en développement)
+- **Architecture** : [`docs/architecture.md`](docs/architecture.md)
+- **ERD** : [`docs/erd.md`](docs/erd.md)
+- **ADRs** : [`docs/adrs/`](docs/adrs/)
+
+---
 
 ## 🤝 Contribution
 
@@ -267,20 +247,19 @@ SMTP_PASS=your_password
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
 
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 👥 Équipe
+##  Équipe
 
 - **Développeur Principal** : Ayman
 - **Encadrant Académique** : 
 
-## 📞 Support
+## � Licence
 
-Pour toute question ou problème :
-- Ouvrir une issue sur GitHub
-- Contacter l'équipe de développement
-- Consulter la documentation
+Ce projet est sous licence [MIT](LICENSE). Voir le fichier `LICENSE` pour plus de détails.
 
-**AssurOnline** - Moderniser l'assurance avec la technologie 🚀
+---
+
+<div align="center">
+
+**AssurOnline** — Moderniser l'assurance avec la technologie 🚀
+
+</div>

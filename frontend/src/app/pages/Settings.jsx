@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../../shared/context/ThemeContext';
 import { settingsAPI } from '../../shared/services/api';
-import '../../assets/styles/user-settings.css';
-import { 
-  Palette, 
-  Bell, 
-  Globe, 
-  Shield, 
+import {
+  Palette,
+  Bell,
+  Globe,
+  Shield,
   Monitor,
   Moon,
   Sun,
@@ -25,29 +24,29 @@ const Settings = () => {
     theme: theme,
     font_size: 'medium',
     compact_mode: false,
-    
+
     // Notifications
     email_notifications: true,
     push_notifications: true,
     sms_notifications: false,
     marketing_emails: false,
-    
+
     // Privacy
     profile_visibility: 'private',
     data_sharing: false,
     analytics_enabled: true,
-    
+
     // Language & Region
     language: 'fr',
     timezone: 'Africa/Casablanca',
     currency: 'MAD',
     date_format: 'DD/MM/YYYY',
-    
+
     // Accessibility
     high_contrast: false,
     reduced_motion: false,
     screen_reader: false,
-    
+
     // Sound
     sound_enabled: true,
     volume: 70
@@ -76,22 +75,22 @@ const Settings = () => {
   // Apply font size and compact mode classes to document
   useEffect(() => {
     const root = document.documentElement;
-    
+
     // Remove existing font size classes
     root.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
-    
+
     // Add current font size class
     if (settings.font_size) {
       root.classList.add(`font-size-${settings.font_size}`);
     }
-    
+
     // Apply compact mode
     if (settings.compact_mode) {
       root.classList.add('compact-mode');
     } else {
       root.classList.remove('compact-mode');
     }
-    
+
     // Cleanup on unmount
     return () => {
       root.classList.remove('font-size-small', 'font-size-medium', 'font-size-large', 'compact-mode');
@@ -111,10 +110,10 @@ const Settings = () => {
       setIsLoading(true);
       const response = await settingsAPI.get();
       const loadedSettings = response.data.data;
-      
+
       setSettings(loadedSettings);
       setOriginalSettings(loadedSettings);
-      
+
       // Apply theme from backend settings
       if (loadedSettings.theme && loadedSettings.theme !== theme) {
         setTheme(loadedSettings.theme);
@@ -133,11 +132,11 @@ const Settings = () => {
       ...prev,
       [key]: value
     }));
-    
+
     // Clear messages when user makes changes
     setSuccessMessage('');
     setErrorMessage('');
-    
+
     // Special handling for theme changes
     if (key === 'theme') {
       console.log('🎨 Theme changing to:', value);
@@ -150,7 +149,7 @@ const Settings = () => {
         handleAutoSave(key, value);
       }, 100);
     }
-    
+
     // Auto-save certain settings immediately
     const autoSaveSettings = ['font_size', 'compact_mode', 'high_contrast', 'reduced_motion'];
     if (autoSaveSettings.includes(key)) {
@@ -179,29 +178,29 @@ const Settings = () => {
     try {
       setIsSaving(true);
       setErrorMessage('');
-      
+
       // Validate settings before saving
       const validationErrors = validateSettings(settings);
       if (validationErrors.length > 0) {
         setErrorMessage(`Validation errors: ${validationErrors.join(', ')}`);
         return;
       }
-      
+
       const response = await settingsAPI.update(settings);
-      
+
       if (response.data.success) {
         setOriginalSettings({ ...settings });
         setHasChanges(false);
         setSuccessMessage('Settings saved successfully!');
-        
+
         // Apply theme change immediately if it changed
         if (settings.theme !== theme) {
           setTheme(settings.theme);
         }
-        
+
         // Apply font size and compact mode immediately
         applySettingsToDOM(settings);
-        
+
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
         throw new Error(response.data.message || 'Failed to save settings');
@@ -218,60 +217,60 @@ const Settings = () => {
 
   const validateSettings = (settings) => {
     const errors = [];
-    
+
     // Validate volume range
     if (settings.volume < 0 || settings.volume > 100) {
       errors.push('Volume must be between 0 and 100');
     }
-    
+
     // Validate theme
     if (!['light', 'dark', 'auto'].includes(settings.theme)) {
       errors.push('Invalid theme selection');
     }
-    
+
     // Validate font size
     if (!['small', 'medium', 'large'].includes(settings.font_size)) {
       errors.push('Invalid font size selection');
     }
-    
+
     // Validate language
     if (!['fr', 'en', 'ar'].includes(settings.language)) {
       errors.push('Invalid language selection');
     }
-    
+
     // Validate currency
     if (!['MAD', 'EUR', 'USD'].includes(settings.currency)) {
       errors.push('Invalid currency selection');
     }
-    
+
     return errors;
   };
 
   const applySettingsToDOM = (settings) => {
     const root = document.documentElement;
-    
+
     // Remove existing font size classes
     root.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
-    
+
     // Add current font size class
     if (settings.font_size) {
       root.classList.add(`font-size-${settings.font_size}`);
     }
-    
+
     // Apply compact mode
     if (settings.compact_mode) {
       root.classList.add('compact-mode');
     } else {
       root.classList.remove('compact-mode');
     }
-    
+
     // Apply high contrast
     if (settings.high_contrast) {
       root.classList.add('high-contrast');
     } else {
       root.classList.remove('high-contrast');
     }
-    
+
     // Apply reduced motion
     if (settings.reduced_motion) {
       root.classList.add('reduced-motion');
@@ -285,25 +284,25 @@ const Settings = () => {
       try {
         setIsSaving(true);
         setErrorMessage('');
-        
+
         const response = await settingsAPI.reset();
-        
+
         if (response.data.success) {
           const defaultSettings = response.data.data;
-          
+
           setSettings(defaultSettings);
           setOriginalSettings(defaultSettings);
           setHasChanges(false);
           setSuccessMessage('Settings reset to default successfully!');
-          
+
           // Apply theme change immediately
           if (defaultSettings.theme !== theme) {
             setTheme(defaultSettings.theme);
           }
-          
+
           // Apply all settings to DOM
           applySettingsToDOM(defaultSettings);
-          
+
           setTimeout(() => setSuccessMessage(''), 3000);
         } else {
           throw new Error(response.data.message || 'Failed to reset settings');
@@ -343,14 +342,12 @@ const Settings = () => {
       </div>
       <button
         onClick={() => onChange(!enabled)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          enabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
-        }`}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${enabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
+          }`}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-            enabled ? 'translate-x-6' : 'translate-x-1'
-          }`}
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'
+            }`}
         />
       </button>
     </div>
@@ -417,288 +414,285 @@ const Settings = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Appearance Settings */}
-          <SettingCard title="Appearance" icon={Palette}>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Theme
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => handleSettingChange('appearance', 'theme', 'light')}
-                    className={`p-3 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
-                      settings.theme === 'light' 
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shadow-md' 
-                        : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    <Sun className="h-4 w-4 mr-2" />
-                    <span className="font-medium">Light</span>
-                  </button>
-                  <button
-                    onClick={() => handleSettingChange('appearance', 'theme', 'dark')}
-                    className={`p-3 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
-                      settings.theme === 'dark' 
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shadow-md' 
-                        : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    <Moon className="h-4 w-4 mr-2" />
-                    <span className="font-medium">Dark</span>
-                  </button>
-                  <button
-                    onClick={() => handleSettingChange('appearance', 'theme', 'auto')}
-                    className={`p-3 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
-                      settings.theme === 'auto' 
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shadow-md' 
-                        : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    <Monitor className="h-4 w-4 mr-2" />
-                    <span className="font-medium">Auto</span>
-                  </button>
-                </div>
-                
-                {/* Theme Status Indicator */}
-                <div className="mt-3 p-2 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
-                    Current theme: <span className="font-medium text-slate-900 dark:text-slate-100 capitalize">{settings.theme}</span>
-                    {settings.theme === 'auto' && (
-                      <span className="ml-2 text-xs">
-                        (System: {window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark' : 'Light'})
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
+              {/* Appearance Settings */}
+              <SettingCard title="Appearance" icon={Palette}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Theme
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => handleSettingChange('appearance', 'theme', 'light')}
+                        className={`p-3 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${settings.theme === 'light'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shadow-md'
+                            : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
+                          }`}
+                      >
+                        <Sun className="h-4 w-4 mr-2" />
+                        <span className="font-medium">Light</span>
+                      </button>
+                      <button
+                        onClick={() => handleSettingChange('appearance', 'theme', 'dark')}
+                        className={`p-3 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${settings.theme === 'dark'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shadow-md'
+                            : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
+                          }`}
+                      >
+                        <Moon className="h-4 w-4 mr-2" />
+                        <span className="font-medium">Dark</span>
+                      </button>
+                      <button
+                        onClick={() => handleSettingChange('appearance', 'theme', 'auto')}
+                        className={`p-3 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${settings.theme === 'auto'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shadow-md'
+                            : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
+                          }`}
+                      >
+                        <Monitor className="h-4 w-4 mr-2" />
+                        <span className="font-medium">Auto</span>
+                      </button>
+                    </div>
 
-              <SelectOption
-                label="Font Size"
-                value={settings.font_size}
-                options={[
-                  { value: 'small', label: 'Small' },
-                  { value: 'medium', label: 'Medium' },
-                  { value: 'large', label: 'Large' }
-                ]}
-                onChange={(value) => handleSettingChange('appearance', 'font_size', value)}
-                description="Adjust the text size throughout the application"
-              />
+                    {/* Theme Status Indicator */}
+                    <div className="mt-3 p-2 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        Current theme: <span className="font-medium text-slate-900 dark:text-slate-100 capitalize">{settings.theme}</span>
+                        {settings.theme === 'auto' && (
+                          <span className="ml-2 text-xs">
+                            (System: {window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark' : 'Light'})
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
 
-              <ToggleSwitch
-                enabled={settings.compact_mode}
-                onChange={(value) => handleSettingChange('appearance', 'compact_mode', value)}
-                label="Compact Mode"
-                description="Reduce spacing and padding for a more compact interface"
-              />
-            </div>
-          </SettingCard>
+                  <SelectOption
+                    label="Font Size"
+                    value={settings.font_size}
+                    options={[
+                      { value: 'small', label: 'Small' },
+                      { value: 'medium', label: 'Medium' },
+                      { value: 'large', label: 'Large' }
+                    ]}
+                    onChange={(value) => handleSettingChange('appearance', 'font_size', value)}
+                    description="Adjust the text size throughout the application"
+                  />
 
-          {/* Notifications Settings */}
-          <SettingCard title="Notifications" icon={Bell}>
-            <div className="space-y-4">
-              <ToggleSwitch
-                enabled={settings.email_notifications}
-                onChange={(value) => handleSettingChange('notifications', 'email_notifications', value)}
-                label="Email Notifications"
-                description="Receive important updates via email"
-              />
-
-              <ToggleSwitch
-                enabled={settings.push_notifications}
-                onChange={(value) => handleSettingChange('notifications', 'push_notifications', value)}
-                label="Push Notifications"
-                description="Get real-time notifications in your browser"
-              />
-
-              <ToggleSwitch
-                enabled={settings.sms_notifications}
-                onChange={(value) => handleSettingChange('notifications', 'sms_notifications', value)}
-                label="SMS Notifications"
-                description="Receive critical alerts via SMS"
-              />
-
-              <ToggleSwitch
-                enabled={settings.marketing_emails}
-                onChange={(value) => handleSettingChange('notifications', 'marketing_emails', value)}
-                label="Marketing Emails"
-                description="Receive promotional content and updates"
-              />
-            </div>
-          </SettingCard>
-
-          {/* Privacy Settings */}
-          <SettingCard title="Privacy & Security" icon={Shield}>
-            <div className="space-y-4">
-              <SelectOption
-                label="Profile Visibility"
-                value={settings.profile_visibility}
-                options={[
-                  { value: 'public', label: 'Public' },
-                  { value: 'private', label: 'Private' },
-                  { value: 'friends', label: 'Friends Only' }
-                ]}
-                onChange={(value) => handleSettingChange('privacy', 'profile_visibility', value)}
-                description="Control who can see your profile information"
-              />
-
-              <ToggleSwitch
-                enabled={settings.data_sharing}
-                onChange={(value) => handleSettingChange('privacy', 'data_sharing', value)}
-                label="Data Sharing"
-                description="Allow sharing of anonymized data for research"
-              />
-
-              <ToggleSwitch
-                enabled={settings.analytics_enabled}
-                onChange={(value) => handleSettingChange('privacy', 'analytics_enabled', value)}
-                label="Analytics"
-                description="Help improve the application by sharing usage data"
-              />
-            </div>
-          </SettingCard>
-
-          {/* Language & Region */}
-          <SettingCard title="Language & Region" icon={Globe}>
-            <div className="space-y-4">
-              <SelectOption
-                label="Language"
-                value={settings.language}
-                options={[
-                  { value: 'fr', label: 'Français' },
-                  { value: 'en', label: 'English' },
-                  { value: 'ar', label: 'العربية' }
-                ]}
-                onChange={(value) => handleSettingChange('language', 'language', value)}
-              />
-
-              <SelectOption
-                label="Timezone"
-                value={settings.timezone}
-                options={[
-                  { value: 'Africa/Casablanca', label: 'Casablanca (GMT+1)' },
-                  { value: 'Europe/Paris', label: 'Paris (GMT+1)' },
-                  { value: 'UTC', label: 'UTC (GMT+0)' }
-                ]}
-                onChange={(value) => handleSettingChange('language', 'timezone', value)}
-              />
-
-              <SelectOption
-                label="Currency"
-                value={settings.currency}
-                options={[
-                  { value: 'MAD', label: 'Moroccan Dirham (MAD)' },
-                  { value: 'EUR', label: 'Euro (EUR)' },
-                  { value: 'USD', label: 'US Dollar (USD)' }
-                ]}
-                onChange={(value) => handleSettingChange('language', 'currency', value)}
-              />
-
-              <SelectOption
-                label="Date Format"
-                value={settings.date_format}
-                options={[
-                  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-                  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-                  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' }
-                ]}
-                onChange={(value) => handleSettingChange('language', 'date_format', value)}
-              />
-            </div>
-          </SettingCard>
-
-          {/* Accessibility */}
-          <SettingCard title="Accessibility" icon={Eye}>
-            <div className="space-y-4">
-              <ToggleSwitch
-                enabled={settings.high_contrast}
-                onChange={(value) => handleSettingChange('accessibility', 'high_contrast', value)}
-                label="High Contrast"
-                description="Increase contrast for better visibility"
-              />
-
-              <ToggleSwitch
-                enabled={settings.reduced_motion}
-                onChange={(value) => handleSettingChange('accessibility', 'reduced_motion', value)}
-                label="Reduce Motion"
-                description="Minimize animations and transitions"
-              />
-
-              <ToggleSwitch
-                enabled={settings.screen_reader}
-                onChange={(value) => handleSettingChange('accessibility', 'screen_reader', value)}
-                label="Screen Reader Support"
-                description="Optimize interface for screen readers"
-              />
-            </div>
-          </SettingCard>
-
-          {/* Sound Settings */}
-          <SettingCard title="Sound" icon={Volume2}>
-            <div className="space-y-4">
-              <ToggleSwitch
-                enabled={settings.sound_enabled}
-                onChange={(value) => handleSettingChange('sound', 'sound_enabled', value)}
-                label="Enable Sounds"
-                description="Play notification sounds"
-              />
-
-              {settings.sound_enabled && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Volume: {settings.volume}%
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={settings.volume}
-                    onChange={(e) => handleSettingChange('sound', 'volume', parseInt(e.target.value))}
-                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                  <ToggleSwitch
+                    enabled={settings.compact_mode}
+                    onChange={(value) => handleSettingChange('appearance', 'compact_mode', value)}
+                    label="Compact Mode"
+                    description="Reduce spacing and padding for a more compact interface"
                   />
                 </div>
-              )}
-            </div>
-          </SettingCard>
-        </div>
+              </SettingCard>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex justify-end space-x-4">
-          <button
-            onClick={handleReset}
-            disabled={isSaving}
-            className="px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-600 mr-2"></div>
-                Resetting...
-              </>
-            ) : (
-              <>
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Reset to Default
-              </>
-            )}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving || !hasChanges}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors flex items-center disabled:cursor-not-allowed"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Save Settings
-              </>
-            )}
-          </button>
-        </div>
+              {/* Notifications Settings */}
+              <SettingCard title="Notifications" icon={Bell}>
+                <div className="space-y-4">
+                  <ToggleSwitch
+                    enabled={settings.email_notifications}
+                    onChange={(value) => handleSettingChange('notifications', 'email_notifications', value)}
+                    label="Email Notifications"
+                    description="Receive important updates via email"
+                  />
+
+                  <ToggleSwitch
+                    enabled={settings.push_notifications}
+                    onChange={(value) => handleSettingChange('notifications', 'push_notifications', value)}
+                    label="Push Notifications"
+                    description="Get real-time notifications in your browser"
+                  />
+
+                  <ToggleSwitch
+                    enabled={settings.sms_notifications}
+                    onChange={(value) => handleSettingChange('notifications', 'sms_notifications', value)}
+                    label="SMS Notifications"
+                    description="Receive critical alerts via SMS"
+                  />
+
+                  <ToggleSwitch
+                    enabled={settings.marketing_emails}
+                    onChange={(value) => handleSettingChange('notifications', 'marketing_emails', value)}
+                    label="Marketing Emails"
+                    description="Receive promotional content and updates"
+                  />
+                </div>
+              </SettingCard>
+
+              {/* Privacy Settings */}
+              <SettingCard title="Privacy & Security" icon={Shield}>
+                <div className="space-y-4">
+                  <SelectOption
+                    label="Profile Visibility"
+                    value={settings.profile_visibility}
+                    options={[
+                      { value: 'public', label: 'Public' },
+                      { value: 'private', label: 'Private' },
+                      { value: 'friends', label: 'Friends Only' }
+                    ]}
+                    onChange={(value) => handleSettingChange('privacy', 'profile_visibility', value)}
+                    description="Control who can see your profile information"
+                  />
+
+                  <ToggleSwitch
+                    enabled={settings.data_sharing}
+                    onChange={(value) => handleSettingChange('privacy', 'data_sharing', value)}
+                    label="Data Sharing"
+                    description="Allow sharing of anonymized data for research"
+                  />
+
+                  <ToggleSwitch
+                    enabled={settings.analytics_enabled}
+                    onChange={(value) => handleSettingChange('privacy', 'analytics_enabled', value)}
+                    label="Analytics"
+                    description="Help improve the application by sharing usage data"
+                  />
+                </div>
+              </SettingCard>
+
+              {/* Language & Region */}
+              <SettingCard title="Language & Region" icon={Globe}>
+                <div className="space-y-4">
+                  <SelectOption
+                    label="Language"
+                    value={settings.language}
+                    options={[
+                      { value: 'fr', label: 'Français' },
+                      { value: 'en', label: 'English' },
+                      { value: 'ar', label: 'العربية' }
+                    ]}
+                    onChange={(value) => handleSettingChange('language', 'language', value)}
+                  />
+
+                  <SelectOption
+                    label="Timezone"
+                    value={settings.timezone}
+                    options={[
+                      { value: 'Africa/Casablanca', label: 'Casablanca (GMT+1)' },
+                      { value: 'Europe/Paris', label: 'Paris (GMT+1)' },
+                      { value: 'UTC', label: 'UTC (GMT+0)' }
+                    ]}
+                    onChange={(value) => handleSettingChange('language', 'timezone', value)}
+                  />
+
+                  <SelectOption
+                    label="Currency"
+                    value={settings.currency}
+                    options={[
+                      { value: 'MAD', label: 'Moroccan Dirham (MAD)' },
+                      { value: 'EUR', label: 'Euro (EUR)' },
+                      { value: 'USD', label: 'US Dollar (USD)' }
+                    ]}
+                    onChange={(value) => handleSettingChange('language', 'currency', value)}
+                  />
+
+                  <SelectOption
+                    label="Date Format"
+                    value={settings.date_format}
+                    options={[
+                      { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+                      { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+                      { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' }
+                    ]}
+                    onChange={(value) => handleSettingChange('language', 'date_format', value)}
+                  />
+                </div>
+              </SettingCard>
+
+              {/* Accessibility */}
+              <SettingCard title="Accessibility" icon={Eye}>
+                <div className="space-y-4">
+                  <ToggleSwitch
+                    enabled={settings.high_contrast}
+                    onChange={(value) => handleSettingChange('accessibility', 'high_contrast', value)}
+                    label="High Contrast"
+                    description="Increase contrast for better visibility"
+                  />
+
+                  <ToggleSwitch
+                    enabled={settings.reduced_motion}
+                    onChange={(value) => handleSettingChange('accessibility', 'reduced_motion', value)}
+                    label="Reduce Motion"
+                    description="Minimize animations and transitions"
+                  />
+
+                  <ToggleSwitch
+                    enabled={settings.screen_reader}
+                    onChange={(value) => handleSettingChange('accessibility', 'screen_reader', value)}
+                    label="Screen Reader Support"
+                    description="Optimize interface for screen readers"
+                  />
+                </div>
+              </SettingCard>
+
+              {/* Sound Settings */}
+              <SettingCard title="Sound" icon={Volume2}>
+                <div className="space-y-4">
+                  <ToggleSwitch
+                    enabled={settings.sound_enabled}
+                    onChange={(value) => handleSettingChange('sound', 'sound_enabled', value)}
+                    label="Enable Sounds"
+                    description="Play notification sounds"
+                  />
+
+                  {settings.sound_enabled && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Volume: {settings.volume}%
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={settings.volume}
+                        onChange={(e) => handleSettingChange('sound', 'volume', parseInt(e.target.value))}
+                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                  )}
+                </div>
+              </SettingCard>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-8 flex justify-end space-x-4">
+              <button
+                onClick={handleReset}
+                disabled={isSaving}
+                className="px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-600 mr-2"></div>
+                    Resetting...
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset to Default
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving || !hasChanges}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors flex items-center disabled:cursor-not-allowed"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Settings
+                  </>
+                )}
+              </button>
+            </div>
           </>
         )}
       </div>

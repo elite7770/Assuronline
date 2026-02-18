@@ -6,7 +6,7 @@ export const authMiddleware = (req, res, next) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch {
@@ -16,9 +16,9 @@ export const authMiddleware = (req, res, next) => {
 
 export const requireRole =
   (...roles) =>
-  (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-    next();
-  };
+    (req, res, next) => {
+      if (!req.user || !roles.includes(req.user.role)) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      next();
+    };

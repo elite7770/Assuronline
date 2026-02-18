@@ -1,17 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../shared/context/AuthContext';
 import { profileAPI } from '../../shared/services/api';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar, 
-  Shield, 
-  Edit3, 
-  Save, 
-  X, 
-  Camera, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Shield,
+  Edit3,
+  Save,
+  X,
+  Camera,
   Check,
   AlertCircle,
   Eye,
@@ -45,7 +45,7 @@ const Profile = () => {
     confirm: false
   });
   const fileInputRef = useRef(null);
-  
+
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -66,12 +66,12 @@ const Profile = () => {
         setIsLoadingProfile(true);
         const response = await profileAPI.get();
         const profileData = response.data.data;
-        
+
         // Split name into first and last name for display
         const nameParts = (profileData.name || '').split(' ');
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
-        
+
         setFormData({
           first_name: firstName,
           last_name: lastName,
@@ -84,7 +84,7 @@ const Profile = () => {
           role: profileData.role || 'client',
           avatar_url: null // Not supported in current schema
         });
-        
+
         setShowTwoFactor(false); // Not supported in current schema
       } catch (error) {
         console.error('Error loading profile:', error);
@@ -99,27 +99,27 @@ const Profile = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.first_name.trim()) {
       newErrors.first_name = 'First name is required';
     }
-    
+
     if (!formData.last_name.trim()) {
       newErrors.last_name = 'Last name is required';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else if (!/^\+?[\d\s\-()]+$/.test(formData.phone)) {
       newErrors.phone = 'Phone number is invalid';
     }
-    
+
     if (!formData.date_of_birth) {
       newErrors.date_of_birth = 'Date of birth is required';
     } else {
@@ -130,7 +130,7 @@ const Profile = () => {
         newErrors.date_of_birth = 'You must be at least 18 years old';
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -141,7 +141,7 @@ const Profile = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -163,11 +163,11 @@ const Profile = () => {
     if (!validateForm()) {
       return;
     }
-    
+
     setIsLoading(true);
     setSuccessMessage('');
     setErrors({});
-    
+
     try {
       // Combine first_name and last_name into name field
       const updateData = {
@@ -175,20 +175,20 @@ const Profile = () => {
         name: `${formData.first_name} ${formData.last_name}`.trim(),
         birth_date: formData.date_of_birth
       };
-      
+
       // Remove fields that don't exist in backend schema
       delete updateData.first_name;
       delete updateData.last_name;
       delete updateData.date_of_birth;
       delete updateData.avatar_url;
-      
+
       await profileAPI.update(updateData);
       setSuccessMessage('Profile updated successfully!');
       setIsEditing(false);
-      
+
       // Dispatch event to update user menu
       window.dispatchEvent(new CustomEvent('profileUpdated'));
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
@@ -210,7 +210,7 @@ const Profile = () => {
       // Reload the original profile data
       const response = await profileAPI.get();
       const profileData = response.data.data;
-      
+
       setFormData({
         first_name: profileData.first_name || '',
         last_name: profileData.last_name || '',
@@ -226,7 +226,7 @@ const Profile = () => {
     } catch (error) {
       console.error('Error reloading profile:', error);
     }
-    
+
     setErrors({});
     setIsEditing(false);
   };
@@ -238,15 +238,15 @@ const Profile = () => {
         setErrors({ avatar: 'File size must be less than 5MB' });
         return;
       }
-      
+
       if (!file.type.startsWith('image/')) {
         setErrors({ avatar: 'Please select an image file' });
         return;
       }
-      
+
       setIsLoading(true);
       setErrors({});
-      
+
       try {
         const response = await profileAPI.uploadAvatar(file);
         setFormData(prev => ({
@@ -254,10 +254,10 @@ const Profile = () => {
           avatar_url: response.data.data.avatar_url
         }));
         setSuccessMessage('Avatar uploaded successfully!');
-        
+
         // Dispatch event to update user menu
         window.dispatchEvent(new CustomEvent('profileUpdated'));
-        
+
         setTimeout(() => setSuccessMessage(''), 3000);
       } catch (error) {
         console.error('Error uploading avatar:', error);
@@ -270,35 +270,35 @@ const Profile = () => {
 
   const handlePasswordSave = async () => {
     const newErrors = {};
-    
+
     if (!passwordData.currentPassword) {
       newErrors.currentPassword = 'Current password is required';
     }
-    
+
     if (!passwordData.newPassword) {
       newErrors.newPassword = 'New password is required';
     } else if (passwordData.newPassword.length < 8) {
       newErrors.newPassword = 'Password must be at least 8 characters';
     }
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(prev => ({ ...prev, ...newErrors }));
       return;
     }
-    
+
     setIsLoading(true);
     setErrors({});
-    
+
     try {
       await profileAPI.changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
-      
+
       setSuccessMessage('Password changed successfully!');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setShowPasswordForm(false);
@@ -320,7 +320,7 @@ const Profile = () => {
   const handleTwoFactorToggle = async () => {
     setIsLoading(true);
     setErrors({});
-    
+
     try {
       await profileAPI.toggleTwoFactor(!showTwoFactor);
       setShowTwoFactor(!showTwoFactor);
@@ -356,7 +356,7 @@ const Profile = () => {
     if (!window.confirm('Are you sure you want to delete this session?')) {
       return;
     }
-    
+
     setIsLoading(true);
     try {
       await profileAPI.deleteSession(sessionId);
@@ -415,7 +415,7 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 sticky top-6">
+            <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 sticky top-6">
               <div className="text-center">
                 {/* Avatar */}
                 <div className="relative inline-block mb-4">
@@ -423,17 +423,17 @@ const Profile = () => {
                     <img
                       src={formData.avatar_url}
                       alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-700 shadow-lg"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-slate-700 shadow-lg"
                     />
                   ) : (
-                    <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white dark:border-slate-700 shadow-lg">
+                    <div className="w-24 h-24 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-slate-700 shadow-lg shadow-red-500/20">
                       {formData.first_name[0] || 'U'}{formData.last_name[0] || 'U'}
                     </div>
                   )}
-                  <button 
+                  <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                    title="Change avatar"
+                    className="absolute bottom-0 right-0 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-105"
+                    title="Changer l'avatar"
                   >
                     <Camera className="h-4 w-4" />
                   </button>
@@ -445,78 +445,74 @@ const Profile = () => {
                     className="hidden"
                   />
                 </div>
-                
+
                 {errors.avatar && (
-                  <p className="text-red-600 dark:text-red-400 text-sm mb-2">{errors.avatar}</p>
+                  <p className="text-red-400 text-sm mb-2">{errors.avatar}</p>
                 )}
 
                 {/* User Info */}
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                <h2 className="text-xl font-semibold text-white mb-1">
                   {formData.first_name} {formData.last_name}
                 </h2>
-                <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  {formData.email}
-                </p>
+                <p className="text-slate-400 text-sm mb-4">{formData.email}</p>
 
                 {/* Role Badge */}
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                  <Shield className="h-4 w-4 mr-1" />
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
+                  <Shield className="h-3.5 w-3.5 mr-1.5" />
                   {formData.role.charAt(0).toUpperCase() + formData.role.slice(1)}
                 </div>
 
                 {/* Action Buttons */}
-                <div className="mt-6 space-y-3">
+                <div className="mt-6 space-y-2">
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center transform hover:scale-105 hover:shadow-lg"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-500/20"
                     >
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      Edit Profile
+                      <Edit3 className="h-4 w-4" />
+                      Modifier le profil
                     </button>
                   ) : (
                     <div className="space-y-2">
                       <button
                         onClick={handleSave}
                         disabled={isLoading}
-                        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center transform hover:scale-105 hover:shadow-lg disabled:transform-none"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white px-4 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
                       >
                         {isLoading ? (
                           <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Saving...
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                            Enregistrement...
                           </>
                         ) : (
                           <>
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Changes
+                            <Save className="h-4 w-4" />
+                            Sauvegarder
                           </>
                         )}
                       </button>
                       <button
                         onClick={handleCancel}
                         disabled={isLoading}
-                        className="w-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 disabled:bg-slate-100 dark:disabled:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center transform hover:scale-105 hover:shadow-lg disabled:transform-none"
+                        className="w-full bg-slate-700/60 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
                       >
-                        <X className="h-4 w-4 mr-2" />
-                        Cancel
+                        <X className="h-4 w-4" />
+                        Annuler
                       </button>
                     </div>
                   )}
                 </div>
 
                 {/* Quick Actions */}
-                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Quick Actions</h3>
-                  <div className="space-y-2">
-                    <button
-                      onClick={logout}
-                      className="w-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-center text-sm"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </button>
-                  </div>
+                <div className="mt-6 pt-5 border-t border-slate-700/60">
+                  <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">Actions rapides</p>
+                  <button
+                    onClick={logout}
+                    className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm border border-red-500/20 hover:border-red-500/40"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Se déconnecter
+                  </button>
                 </div>
               </div>
             </div>
@@ -544,11 +540,10 @@ const Profile = () => {
                       value={formData.first_name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${
-                        errors.first_name 
-                          ? 'border-red-300 dark:border-red-600' 
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${errors.first_name
+                          ? 'border-red-300 dark:border-red-600'
                           : 'border-slate-300 dark:border-slate-600'
-                      }`}
+                        }`}
                     />
                   </div>
                   {errors.first_name && (
@@ -572,11 +567,10 @@ const Profile = () => {
                       value={formData.last_name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${
-                        errors.last_name 
-                          ? 'border-red-300 dark:border-red-600' 
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${errors.last_name
+                          ? 'border-red-300 dark:border-red-600'
                           : 'border-slate-300 dark:border-slate-600'
-                      }`}
+                        }`}
                     />
                   </div>
                   {errors.last_name && (
@@ -600,11 +594,10 @@ const Profile = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${
-                        errors.email 
-                          ? 'border-red-300 dark:border-red-600' 
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${errors.email
+                          ? 'border-red-300 dark:border-red-600'
                           : 'border-slate-300 dark:border-slate-600'
-                      }`}
+                        }`}
                     />
                   </div>
                   {errors.email && (
@@ -628,11 +621,10 @@ const Profile = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${
-                        errors.phone 
-                          ? 'border-red-300 dark:border-red-600' 
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${errors.phone
+                          ? 'border-red-300 dark:border-red-600'
                           : 'border-slate-300 dark:border-slate-600'
-                      }`}
+                        }`}
                     />
                   </div>
                   {errors.phone && (
@@ -656,11 +648,10 @@ const Profile = () => {
                       value={formData.date_of_birth}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${
-                        errors.date_of_birth 
-                          ? 'border-red-300 dark:border-red-600' 
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors ${errors.date_of_birth
+                          ? 'border-red-300 dark:border-red-600'
                           : 'border-slate-300 dark:border-slate-600'
-                      }`}
+                        }`}
                     />
                   </div>
                   {errors.date_of_birth && (
@@ -711,14 +702,14 @@ const Profile = () => {
                         <p className="text-sm text-slate-600 dark:text-slate-400">Update your password to keep your account secure</p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setShowPasswordForm(!showPasswordForm)}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                     >
                       {showPasswordForm ? 'Cancel' : 'Change'}
                     </button>
                   </div>
-                  
+
                   {showPasswordForm && (
                     <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-700/50">
                       <div className="space-y-4">
@@ -857,7 +848,7 @@ const Profile = () => {
                       <p className="text-sm text-slate-600 dark:text-slate-400">Add an extra layer of security to your account</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={handleTwoFactorToggle}
                     disabled={isLoading}
                     className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
@@ -884,7 +875,7 @@ const Profile = () => {
                       <p className="text-sm text-slate-600 dark:text-slate-400">Manage your active login sessions</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={handleSessionsToggle}
                     disabled={isLoading}
                     className="bg-slate-600 hover:bg-slate-700 disabled:bg-slate-400 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"

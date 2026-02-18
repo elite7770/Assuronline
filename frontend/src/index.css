@@ -2,12 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import the clean theme system (kept for legacy styles) */
-@import './assets/styles/theme.css';
 /* Tokens: light/dark CSS variables */
 @import './shared/styles/tokens.css';
-/* Features Section CSS Variables */
-@import './assets/styles/css-variables.css';
 
 /* Enhanced Global Styles */
 @layer base {

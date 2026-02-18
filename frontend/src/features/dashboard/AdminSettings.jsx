@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
-import { 
+import {
   Settings, Save, RotateCcw, AlertCircle, CheckCircle,
   Mail, Eye, EyeOff, Loader2
 } from 'lucide-react';
+import { settingsAPI } from '../../shared/services/api';
 
 const AdminSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -100,24 +101,16 @@ const AdminSettings = () => {
     try {
       setLoading(true);
       setError('');
-      
-      // Always use real API for settings
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch('http://localhost:3001/api/v1/admin/settings', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data.settings || settings);
+
+      // Use settingsAPI
+      const response = await settingsAPI.get();
+
+      if (response.data) {
+        setSettings(response.data.settings || settings);
       } else {
         throw new Error('Failed to fetch settings');
       }
-      
+
     } catch (err) {
       console.error('Settings fetch error:', err);
       setError('Failed to load settings. Please try again.');
@@ -135,28 +128,15 @@ const AdminSettings = () => {
       setSaving(true);
       setError('');
       setSuccess('');
-      
-      // Always use real API call
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch('http://localhost:3001/api/v1/admin/settings', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(settings)
-      });
-      
-      if (response.ok) {
-        setSuccess('Settings saved successfully!');
-        setHasChanges(false);
-      } else {
-        throw new Error('Failed to save settings');
-      }
-      
+
+      // Use settingsAPI
+      await settingsAPI.update(settings);
+
+      setSuccess('Settings saved successfully!');
+      setHasChanges(false);
+
       setTimeout(() => setSuccess(''), 3000);
-      
+
     } catch (err) {
       console.error('Save error:', err);
       setError('Failed to save settings. Please try again.');
@@ -172,29 +152,20 @@ const AdminSettings = () => {
         setSaving(true);
         setError('');
         setSuccess('');
-        
-        // Always use real API call
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch('http://localhost:3001/api/v1/admin/settings/reset', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setSettings(data.settings || settings);
+
+        // Use settingsAPI
+        const response = await settingsAPI.reset();
+
+        if (response.data) {
+          setSettings(response.data.settings || settings);
           setSuccess('Settings reset to default!');
           setHasChanges(false);
         } else {
           throw new Error('Failed to reset settings');
         }
-        
+
         setTimeout(() => setSuccess(''), 3000);
-        
+
       } catch (err) {
         console.error('Reset error:', err);
         setError('Failed to reset settings. Please try again.');
@@ -292,11 +263,10 @@ const AdminSettings = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                    activeTab === tab.id
+                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === tab.id
                       ? `border-${tab.color}-400 text-${tab.color}-300`
                       : 'border-transparent text-gray-400 hover:text-white hover:border-gray-500'
-                  }`}
+                    }`}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{tab.name}</span>
@@ -325,19 +295,17 @@ const AdminSettings = () => {
                     </div>
                     <button
                       type="button"
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        settings.system.maintenance_mode ? 'bg-blue-600' : 'bg-gray-600'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.system.maintenance_mode ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
                       onClick={() => handleSettingChange('system', 'maintenance_mode', !settings.system.maintenance_mode)}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          settings.system.maintenance_mode ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.system.maintenance_mode ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center justify-between py-3">
                     <div className="flex-1">
                       <label className="text-sm font-medium text-white">User Registration</label>
@@ -345,19 +313,17 @@ const AdminSettings = () => {
                     </div>
                     <button
                       type="button"
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        settings.system.registration_enabled ? 'bg-blue-600' : 'bg-gray-600'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.system.registration_enabled ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
                       onClick={() => handleSettingChange('system', 'registration_enabled', !settings.system.registration_enabled)}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          settings.system.registration_enabled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.system.registration_enabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center justify-between py-3">
                     <div className="flex-1">
                       <label className="text-sm font-medium text-white">Email Verification Required</label>
@@ -365,19 +331,17 @@ const AdminSettings = () => {
                     </div>
                     <button
                       type="button"
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        settings.system.email_verification_required ? 'bg-blue-600' : 'bg-gray-600'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.system.email_verification_required ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
                       onClick={() => handleSettingChange('system', 'email_verification_required', !settings.system.email_verification_required)}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          settings.system.email_verification_required ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.system.email_verification_required ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">Max File Size (MB)</label>
@@ -391,7 +355,7 @@ const AdminSettings = () => {
                       />
                       <p className="text-sm text-gray-300">Maximum file size for uploads</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">Session Timeout (minutes)</label>
                       <input
@@ -405,7 +369,7 @@ const AdminSettings = () => {
                       <p className="text-sm text-gray-300">User session timeout duration</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">Backup Frequency</label>
@@ -421,7 +385,7 @@ const AdminSettings = () => {
                       </select>
                       <p className="text-sm text-gray-300">How often to backup system data</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">Log Level</label>
                       <select
@@ -437,7 +401,7 @@ const AdminSettings = () => {
                       <p className="text-sm text-gray-300">System logging level</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between py-3">
                     <div className="flex-1">
                       <label className="text-sm font-medium text-white">Debug Mode</label>
@@ -445,15 +409,13 @@ const AdminSettings = () => {
                     </div>
                     <button
                       type="button"
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        settings.system.debug_mode ? 'bg-blue-600' : 'bg-gray-600'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.system.debug_mode ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
                       onClick={() => handleSettingChange('system', 'debug_mode', !settings.system.debug_mode)}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          settings.system.debug_mode ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.system.debug_mode ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
@@ -480,19 +442,17 @@ const AdminSettings = () => {
                     </div>
                     <button
                       type="button"
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        settings.email.enabled ? 'bg-blue-600' : 'bg-gray-600'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.email.enabled ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
                       onClick={() => handleSettingChange('email', 'enabled', !settings.email.enabled)}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          settings.email.enabled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.email.enabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">SMTP Host</label>
@@ -505,7 +465,7 @@ const AdminSettings = () => {
                       />
                       <p className="text-sm text-gray-300">SMTP server hostname</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">SMTP Port</label>
                       <input
@@ -519,7 +479,7 @@ const AdminSettings = () => {
                       <p className="text-sm text-gray-300">SMTP server port</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">SMTP Username</label>
@@ -532,7 +492,7 @@ const AdminSettings = () => {
                       />
                       <p className="text-sm text-gray-300">SMTP authentication username</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">SMTP Password</label>
                       <div className="relative">
@@ -558,7 +518,7 @@ const AdminSettings = () => {
                       <p className="text-sm text-gray-300">SMTP authentication password</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">From Email</label>
@@ -571,7 +531,7 @@ const AdminSettings = () => {
                       />
                       <p className="text-sm text-gray-300">Default sender email address</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-white">From Name</label>
                       <input
@@ -584,7 +544,7 @@ const AdminSettings = () => {
                       <p className="text-sm text-gray-300">Default sender name</p>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-white">Reply To Email</label>
                     <input
@@ -596,7 +556,7 @@ const AdminSettings = () => {
                     />
                     <p className="text-sm text-gray-300">Email address for replies</p>
                   </div>
-                  
+
                   <div className="flex items-center justify-between py-3">
                     <div className="flex-1">
                       <label className="text-sm font-medium text-white">Use SSL/TLS</label>
@@ -604,15 +564,13 @@ const AdminSettings = () => {
                     </div>
                     <button
                       type="button"
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        settings.email.smtp_secure ? 'bg-blue-600' : 'bg-gray-600'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.email.smtp_secure ? 'bg-blue-600' : 'bg-gray-600'
+                        }`}
                       onClick={() => handleSettingChange('email', 'smtp_secure', !settings.email.smtp_secure)}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          settings.email.smtp_secure ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.email.smtp_secure ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
@@ -648,7 +606,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Minimum characters required (6-32)</p>
                       </div>
-                      
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div>
@@ -658,18 +616,16 @@ const AdminSettings = () => {
                           <button
                             type="button"
                             onClick={() => handleSettingChange('security', 'password_require_special', !settings.security.password_require_special)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              settings.security.password_require_special ? 'bg-red-600' : 'bg-gray-600'
-                            }`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.security.password_require_special ? 'bg-red-600' : 'bg-gray-600'
+                              }`}
                           >
                             <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                settings.security.password_require_special ? 'translate-x-6' : 'translate-x-1'
-                              }`}
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.security.password_require_special ? 'translate-x-6' : 'translate-x-1'
+                                }`}
                             />
                           </button>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                           <div>
                             <label className="text-sm font-medium text-white">Require Numbers</label>
@@ -678,18 +634,16 @@ const AdminSettings = () => {
                           <button
                             type="button"
                             onClick={() => handleSettingChange('security', 'password_require_numbers', !settings.security.password_require_numbers)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              settings.security.password_require_numbers ? 'bg-red-600' : 'bg-gray-600'
-                            }`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.security.password_require_numbers ? 'bg-red-600' : 'bg-gray-600'
+                              }`}
                           >
                             <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                settings.security.password_require_numbers ? 'translate-x-6' : 'translate-x-1'
-                              }`}
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.security.password_require_numbers ? 'translate-x-6' : 'translate-x-1'
+                                }`}
                             />
                           </button>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                           <div>
                             <label className="text-sm font-medium text-white">Require Uppercase</label>
@@ -698,14 +652,12 @@ const AdminSettings = () => {
                           <button
                             type="button"
                             onClick={() => handleSettingChange('security', 'password_require_uppercase', !settings.security.password_require_uppercase)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              settings.security.password_require_uppercase ? 'bg-red-600' : 'bg-gray-600'
-                            }`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.security.password_require_uppercase ? 'bg-red-600' : 'bg-gray-600'
+                              }`}
                           >
                             <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                settings.security.password_require_uppercase ? 'translate-x-6' : 'translate-x-1'
-                              }`}
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.security.password_require_uppercase ? 'translate-x-6' : 'translate-x-1'
+                                }`}
                             />
                           </button>
                         </div>
@@ -729,7 +681,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Failed attempts before lockout (3-10)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Lockout Duration (minutes)</label>
                         <input
@@ -756,14 +708,12 @@ const AdminSettings = () => {
                       <button
                         type="button"
                         onClick={() => handleSettingChange('security', 'two_factor_enabled', !settings.security.two_factor_enabled)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          settings.security.two_factor_enabled ? 'bg-red-600' : 'bg-gray-600'
-                        }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.security.two_factor_enabled ? 'bg-red-600' : 'bg-gray-600'
+                          }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            settings.security.two_factor_enabled ? 'translate-x-6' : 'translate-x-1'
-                          }`}
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.security.two_factor_enabled ? 'translate-x-6' : 'translate-x-1'
+                            }`}
                         />
                       </button>
                     </div>
@@ -784,7 +734,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Comma-separated IP addresses (leave empty for no restriction)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Allowed Domains</label>
                         <textarea
@@ -829,7 +779,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Official company name</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Company Email</label>
                         <input
@@ -841,7 +791,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Primary business email address</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Company Phone</label>
                         <input
@@ -853,7 +803,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Business contact phone number</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Company Address</label>
                         <textarea
@@ -883,7 +833,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">URL to company logo image</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Currency</label>
                         <select
@@ -920,7 +870,7 @@ const AdminSettings = () => {
                         </select>
                         <p className="text-sm text-gray-300">Business timezone</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Language</label>
                         <select
@@ -935,7 +885,7 @@ const AdminSettings = () => {
                         </select>
                         <p className="text-sm text-gray-300">Default system language</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Date Format</label>
                         <select
@@ -966,7 +916,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Business opening time</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Closing Time</label>
                         <input
@@ -992,7 +942,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Customer support email</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Sales Email</label>
                         <input
@@ -1039,7 +989,7 @@ const AdminSettings = () => {
                         </div>
                         <p className="text-sm text-gray-300">Base premium for auto insurance (500-50,000 MAD)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Motorcycle Insurance Base Rate</label>
                         <div className="relative">
@@ -1081,7 +1031,7 @@ const AdminSettings = () => {
                         </div>
                         <p className="text-sm text-gray-300">Tax rate applied to premiums (0-50%)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Commission Rate (%)</label>
                         <div className="relative">
@@ -1127,7 +1077,7 @@ const AdminSettings = () => {
                         </div>
                         <p className="text-sm text-gray-300">Discount for annual payment (0-20%)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Quarterly Payment Discount (%)</label>
                         <div className="relative">
@@ -1169,7 +1119,7 @@ const AdminSettings = () => {
                         </div>
                         <p className="text-sm text-gray-300">Minimum premium amount (100-10,000 MAD)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Maximum Premium</label>
                         <div className="relative">
@@ -1206,7 +1156,7 @@ const AdminSettings = () => {
                         </div>
                         <p className="text-sm text-gray-300">Multiplier for young drivers (1.0-3.0x)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Experience Factor (0-2 years)</label>
                         <div className="relative">
@@ -1239,7 +1189,7 @@ const AdminSettings = () => {
                         />
                         <p className="text-sm text-gray-300">Payment grace period (0-30 days)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Late Fee (%)</label>
                         <div className="relative">
@@ -1255,7 +1205,7 @@ const AdminSettings = () => {
                         </div>
                         <p className="text-sm text-gray-300">Late payment fee (0-10%)</p>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-white">Installment Fee (MAD)</label>
                         <div className="relative">
@@ -1300,18 +1250,16 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'email_enabled', !settings.notifications.email_enabled)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.email_enabled ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.email_enabled ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.email_enabled ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.email_enabled ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
                         <div>
                           <label className="text-sm font-medium text-white">SMS Notifications</label>
@@ -1320,18 +1268,16 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'sms_enabled', !settings.notifications.sms_enabled)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.sms_enabled ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.sms_enabled ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.sms_enabled ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.sms_enabled ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
                         <div>
                           <label className="text-sm font-medium text-white">Push Notifications</label>
@@ -1340,14 +1286,12 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'push_enabled', !settings.notifications.push_enabled)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.push_enabled ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.push_enabled ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.push_enabled ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.push_enabled ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
@@ -1366,18 +1310,16 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'quote_created', !settings.notifications.quote_created)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.quote_created ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.quote_created ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.quote_created ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.quote_created ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
                         <div>
                           <label className="text-sm font-medium text-white">Quote Approved</label>
@@ -1386,18 +1328,16 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'quote_approved', !settings.notifications.quote_approved)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.quote_approved ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.quote_approved ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.quote_approved ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.quote_approved ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
                         <div>
                           <label className="text-sm font-medium text-white">Quote Rejected</label>
@@ -1406,14 +1346,12 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'quote_rejected', !settings.notifications.quote_rejected)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.quote_rejected ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.quote_rejected ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.quote_rejected ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.quote_rejected ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
@@ -1432,18 +1370,16 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'policy_created', !settings.notifications.policy_created)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.policy_created ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.policy_created ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.policy_created ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.policy_created ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
                         <div>
                           <label className="text-sm font-medium text-white">Payment Received</label>
@@ -1452,14 +1388,12 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'payment_received', !settings.notifications.payment_received)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.payment_received ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.payment_received ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.payment_received ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.payment_received ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
@@ -1478,18 +1412,16 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'claim_filed', !settings.notifications.claim_filed)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.claim_filed ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.claim_filed ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.claim_filed ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.claim_filed ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
                         <div>
                           <label className="text-sm font-medium text-white">Claim Processed</label>
@@ -1498,14 +1430,12 @@ const AdminSettings = () => {
                         <button
                           type="button"
                           onClick={() => handleSettingChange('notifications', 'claim_processed', !settings.notifications.claim_processed)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            settings.notifications.claim_processed ? 'bg-indigo-600' : 'bg-gray-600'
-                          }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.notifications.claim_processed ? 'bg-indigo-600' : 'bg-gray-600'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              settings.notifications.claim_processed ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notifications.claim_processed ? 'translate-x-6' : 'translate-x-1'
+                              }`}
                           />
                         </button>
                       </div>
@@ -1522,7 +1452,7 @@ const AdminSettings = () => {
               <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">{tabs.find(t => t.id === activeTab)?.name} Settings</h3>
               <p className="text-gray-300">Configuration options for {tabs.find(t => t.id === activeTab)?.name.toLowerCase()} will be available here</p>
-          </div>
+            </div>
           )}
         </div>
       </div>

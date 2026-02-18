@@ -113,6 +113,7 @@ const OffersSectionMoto = () => {
     >
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-900 to-slate-900 pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-slate-900 to-transparent pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto z-10">
         {/* Header */}

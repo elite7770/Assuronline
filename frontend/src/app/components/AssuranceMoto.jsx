@@ -2,11 +2,8 @@ import HeroMoto from './HeroMoto';
 import OffersSectionMoto from './OffersSectionMoto';
 import WhyChooseUsMotoSection from './WhyChooseUsMotoSection';
 
-import '../../assets/styles/assurance-moto.css';
-import '../../assets/styles/moto-offers-modern.css';
-
 const AssuranceMoto = () => (
-  <div className="assurance-page moto">
+  <div className="min-h-screen bg-slate-900">
     <HeroMoto
       title="Assurance Moto Haut de Gamme"
       subtitle="Une couverture complète pour votre moto, pensée pour les vrais passionnés."

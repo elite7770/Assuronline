@@ -22,6 +22,7 @@ import {
   Home,
   User,
   HelpCircle,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../../shared/context/AuthContext';
 import { useTheme } from '../../shared/context/ThemeContext';
@@ -35,27 +36,26 @@ import {
   adminUsersAPI
 } from '../../shared/services/api';
 
-// Enhanced navigation configuration - now functions that accept counts
 const getAdminNavigation = (counts) => [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, badge: null },
   { name: 'Devis', href: '/admin/quotes', icon: FileText, badge: counts.quotes > 0 ? counts.quotes.toString() : null },
-  { name: 'Policies', href: '/admin/policies', icon: Shield, badge: counts.policies > 0 ? counts.policies.toString() : null },
-  { name: 'Payments', href: '/admin/payments', icon: CreditCard, badge: counts.payments > 0 ? counts.payments.toString() : null },
-  { name: 'Claims', href: '/admin/claims', icon: AlertTriangle, badge: counts.claims > 0 ? counts.claims.toString() : null },
-  { name: 'Users', href: '/admin/users', icon: Users, badge: counts.users > 0 ? counts.users.toString() : null },
-  { name: 'Settings', href: '/admin/settings', icon: Settings, badge: null },
+  { name: 'Polices', href: '/admin/policies', icon: Shield, badge: counts.policies > 0 ? counts.policies.toString() : null },
+  { name: 'Paiements', href: '/admin/payments', icon: CreditCard, badge: counts.payments > 0 ? counts.payments.toString() : null },
+  { name: 'Sinistres', href: '/admin/claims', icon: AlertTriangle, badge: counts.claims > 0 ? counts.claims.toString() : null },
+  { name: 'Utilisateurs', href: '/admin/users', icon: Users, badge: counts.users > 0 ? counts.users.toString() : null },
+  { name: 'Paramètres', href: '/admin/settings', icon: Settings, badge: null },
 ];
 
 const getClientNavigation = (counts) => [
   { name: 'Dashboard', href: '/client/dashboard', icon: LayoutDashboard, badge: null },
-  { name: 'My Devis', href: '/client/quotes', icon: FileText, badge: counts.quotes > 0 ? counts.quotes.toString() : null },
-  { name: 'My Policies', href: '/client/policies', icon: Shield, badge: counts.policies > 0 ? counts.policies.toString() : null },
-  { name: 'My Payments', href: '/client/payments', icon: CreditCard, badge: counts.payments > 0 ? counts.payments.toString() : null },
-  { name: 'My Claims', href: '/client/claims', icon: AlertTriangle, badge: counts.claims > 0 ? counts.claims.toString() : null },
+  { name: 'Mes Devis', href: '/client/quotes', icon: FileText, badge: counts.quotes > 0 ? counts.quotes.toString() : null },
+  { name: 'Mes Polices', href: '/client/policies', icon: Shield, badge: counts.policies > 0 ? counts.policies.toString() : null },
+  { name: 'Paiements', href: '/client/payments', icon: CreditCard, badge: counts.payments > 0 ? counts.payments.toString() : null },
+  { name: 'Sinistres', href: '/client/claims', icon: AlertTriangle, badge: counts.claims > 0 ? counts.claims.toString() : null },
 ];
 
 const EnhancedDashboardLayout = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -64,13 +64,8 @@ const EnhancedDashboardLayout = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [counts, setCounts] = useState({
-    quotes: 0,
-    policies: 0,
-    payments: 0,
-    claims: 0,
-    users: 0,
-  });
+  const [counts, setCounts] = useState({ quotes: 0, policies: 0, payments: 0, claims: 0, users: 0 });
+
   const location = useLocation();
   const { logout, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -80,20 +75,16 @@ const EnhancedDashboardLayout = ({ children }) => {
   const isAdmin = location.pathname.startsWith('/admin');
   const navigation = isAdmin ? getAdminNavigation(counts) : getClientNavigation(counts);
 
-  // Load user profile data
   const loadUserData = async () => {
     try {
       setIsLoadingUser(true);
       const [profileResponse, notificationsResponse] = await Promise.all([
         profileAPI.get(),
-        notificationsAPI.list().catch(() => ({ data: [] })) // Gracefully handle if notifications API fails
+        notificationsAPI.list().catch(() => ({ data: [] }))
       ]);
-
       setUserData(profileResponse.data.data);
       setNotifications(notificationsResponse.data || []);
     } catch (error) {
-      console.error('Error loading user data:', error);
-      // Fallback to auth context user data
       setUserData({
         first_name: user?.name?.split(' ')[0] || 'User',
         last_name: user?.name?.split(' ')[1] || '',
@@ -106,17 +97,13 @@ const EnhancedDashboardLayout = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      loadUserData();
-    }
-  }, [user]);
+  const lastCountsFetch = useRef(0);
 
-  // Load counts data
+  useEffect(() => { if (user) loadUserData(); }, [user]);
+
   const loadCounts = async () => {
     try {
       if (isAdmin) {
-        // Admin: fetch all counts
         const [quotesRes, policiesRes, paymentsRes, claimsRes, usersRes] = await Promise.all([
           quotesAPI.getAll().catch(() => ({ data: [] })),
           policiesAPI.listAdmin().catch(() => ({ data: [] })),
@@ -124,7 +111,6 @@ const EnhancedDashboardLayout = ({ children }) => {
           claimsAPI.listAll().catch(() => ({ data: [] })),
           adminUsersAPI.list().catch(() => ({ data: [] })),
         ]);
-
         setCounts({
           quotes: Array.isArray(quotesRes.data) ? quotesRes.data.length : (quotesRes.data?.data?.length || 0),
           policies: Array.isArray(policiesRes.data) ? policiesRes.data.length : (policiesRes.data?.data?.length || 0),
@@ -133,14 +119,12 @@ const EnhancedDashboardLayout = ({ children }) => {
           users: Array.isArray(usersRes.data) ? usersRes.data.length : (usersRes.data?.data?.length || 0),
         });
       } else {
-        // Client: fetch own counts
         const [quotesRes, policiesRes, paymentsRes, claimsRes] = await Promise.all([
           quotesAPI.getMyQuotes().catch(() => ({ data: [] })),
           policiesAPI.list().catch(() => ({ data: [] })),
           paymentsAPI.list().catch(() => ({ data: [] })),
           claimsAPI.list().catch(() => ({ data: [] })),
         ]);
-
         setCounts({
           quotes: Array.isArray(quotesRes.data) ? quotesRes.data.length : (quotesRes.data?.data?.length || 0),
           policies: Array.isArray(policiesRes.data) ? policiesRes.data.length : (policiesRes.data?.data?.length || 0),
@@ -154,36 +138,31 @@ const EnhancedDashboardLayout = ({ children }) => {
     }
   };
 
-  // Listen for profile updates from other components
   useEffect(() => {
-    const handleProfileUpdate = () => {
-      loadUserData();
-    };
+    if (user) loadCounts();
+    // Only re-fetch counts on mount, not on every route change
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
-  }, []);
-
-  // Load counts when user or location changes
-  useEffect(() => {
-    if (user) {
-      loadCounts();
-    }
-  }, [user, location.pathname]);
-
-  // Listen for data changes to refresh counts
   useEffect(() => {
     const handleDataUpdate = () => {
-      loadCounts();
+      // Throttle: only re-fetch counts if last fetch was >30s ago
+      const now = Date.now();
+      if (now - lastCountsFetch.current > 30_000) {
+        lastCountsFetch.current = now;
+        loadCounts();
+      }
     };
-
     window.addEventListener('dataUpdated', handleDataUpdate);
     return () => window.removeEventListener('dataUpdated', handleDataUpdate);
-  }, [isAdmin]);
+  }, [isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleLogout = () => {
-    logout();
-  };
+  useEffect(() => {
+    const handleProfileUpdate = () => loadUserData();
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdate);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleLogout = () => logout();
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -196,281 +175,232 @@ const EnhancedDashboardLayout = ({ children }) => {
   };
 
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
+    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Handle click outside for dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        setUserMenuOpen(false);
-      }
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
-        setNotificationsOpen(false);
-      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) setUserMenuOpen(false);
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) setNotificationsOpen(false);
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.ctrlKey || event.metaKey) {
-        switch (event.key) {
-          case 'k':
-            event.preventDefault();
-            document.querySelector('.enhanced-search-input')?.focus();
-            break;
-          case '/':
-            event.preventDefault();
-            setSidebarOpen(!sidebarOpen);
-            break;
-          default:
-            // No action for other keys
-            break;
-        }
+        if (event.key === 'k') { event.preventDefault(); document.querySelector('.dashboard-search-input')?.focus(); }
+        if (event.key === '/') { event.preventDefault(); setMobileSidebarOpen(v => !v); }
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [sidebarOpen]);
+  }, []);
+
+  // Close mobile sidebar on route change
+  useEffect(() => { setMobileSidebarOpen(false); }, [location.pathname]);
+
+  const currentPageName = navigation.find(n => n.href === location.pathname)?.name || '';
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-700/60">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/20 flex-shrink-0">
+          <Car className="h-5 w-5 text-white" />
+        </div>
+        <div>
+          <span className="text-white font-bold text-lg leading-none">AssurOnline</span>
+          <p className="text-slate-500 text-xs mt-0.5">{isAdmin ? 'Administration' : 'Espace Client'}</p>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider px-3 mb-3">
+          {isAdmin ? 'Gestion' : 'Navigation'}
+        </p>
+        {navigation.map((item) => {
+          const isActive = location.pathname === item.href;
+          return (
+            <Link
+              key={item.name}
+              to={item.href}
+              onClick={() => setMobileSidebarOpen(false)}
+              className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
+                ? 'bg-red-600/20 text-red-400 border border-red-500/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/60'
+                }`}
+            >
+              <item.icon className={`h-4.5 w-4.5 flex-shrink-0 ${isActive ? 'text-red-400' : 'text-slate-500 group-hover:text-slate-300'}`} style={{ width: '1.125rem', height: '1.125rem' }} />
+              <span className="flex-1">{item.name}</span>
+              {item.badge && (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isActive ? 'bg-red-500/30 text-red-300' : 'bg-slate-600 text-slate-300'
+                  }`}>
+                  {item.badge}
+                </span>
+              )}
+              {isActive && <div className="w-1 h-1 rounded-full bg-red-400" />}
+            </Link>
+          );
+        })}
+      </nav>
+
+
+    </div>
+  );
 
   return (
-    <div className="enhanced-dashboard-root">
-      {/* Sidebar overlay */}
-      {sidebarOpen && (
+    <div className="min-h-screen bg-slate-950 flex">
+
+      {/* ── Mobile sidebar overlay ── */}
+      {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 z-50"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        </div>
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
       )}
 
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-80 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      {/* ── Mobile sidebar (slide-in) ── */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-700/60 transform transition-transform duration-300 ease-in-out lg:hidden ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
-        <div className="enhanced-sidebar">
-          {/* Mobile sidebar header */}
-          <div className="enhanced-sidebar-header">
-            <div className="enhanced-logo">
-              <div className="enhanced-logo-icon">
-                <Car className="h-6 w-6 text-white" />
-              </div>
-              <span className="enhanced-logo-text">AssurOnline</span>
-            </div>
+        <button
+          onClick={() => setMobileSidebarOpen(false)}
+          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <SidebarContent />
+      </aside>
+
+      {/* ── Desktop persistent sidebar ── */}
+      <aside className="hidden lg:flex lg:flex-col w-64 bg-slate-900 border-r border-slate-700/60 fixed inset-y-0 left-0 z-30">
+        <SidebarContent />
+      </aside>
+
+      {/* ── Main content area ── */}
+      <div className="flex-1 flex flex-col min-h-screen lg:pl-64">
+
+        {/* ── Header ── */}
+        <header className="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 shadow-sm">
+          <div className="flex items-center gap-4 px-4 sm:px-6 h-14">
+
+            {/* Mobile menu button */}
             <button
-              onClick={() => setSidebarOpen(false)}
-              className="enhanced-close-btn"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
             >
-              <X className="h-5 w-5" />
+              <Menu className="h-5 w-5" />
             </button>
-          </div>
 
-          {/* Mobile navigation */}
-          <nav className="enhanced-nav">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`enhanced-nav-link ${isActive ? 'enhanced-nav-link--active' : ''}`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon className="enhanced-nav-icon" />
-                  <span className="enhanced-nav-text">{item.name}</span>
-                  {item.badge && (
-                    <span className="enhanced-nav-badge">{item.badge}</span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-        </div>
-      </div>
-
-      {/* Desktop sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-80 transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}>
-        <div className="enhanced-sidebar">
-          {/* Desktop sidebar header */}
-          <div className="enhanced-sidebar-header">
-            <div className="enhanced-logo">
-              <div className="enhanced-logo-icon">
-                <Car className="h-6 w-6 text-white" />
-              </div>
-              <span className="enhanced-logo-text">AssurOnline</span>
-            </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="enhanced-close-btn"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Desktop navigation */}
-          <nav className="enhanced-nav">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`enhanced-nav-link ${isActive ? 'enhanced-nav-link--active' : ''}`}
-                >
-                  <item.icon className="enhanced-nav-icon" />
-                  <span className="enhanced-nav-text">{item.name}</span>
-                  {item.badge && (
-                    <span className="enhanced-nav-badge">{item.badge}</span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-        </div>
-      </div>
-
-      {/* Main content area */}
-      <div className="">
-        {/* Enhanced header */}
-        <header className="enhanced-header">
-          <div className="enhanced-header-content">
-            {/* Left section */}
-            <div className="enhanced-header-left">
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="enhanced-mobile-menu-btn"
-                title="Open sidebar (Ctrl+/)"
+            {/* Breadcrumb */}
+            <nav className="hidden sm:flex items-center gap-1.5 text-sm">
+              <Link
+                to={isAdmin ? '/admin/dashboard' : '/client/dashboard'}
+                className="text-slate-500 hover:text-slate-300 transition-colors"
               >
-                <Menu className="h-5 w-5" />
-              </button>
+                Dashboard
+              </Link>
+              {currentPageName && currentPageName !== 'Dashboard' && (
+                <>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-600" />
+                  <span className="text-slate-300 font-medium">{currentPageName}</span>
+                </>
+              )}
+            </nav>
 
-              {/* Breadcrumbs */}
-              <nav className="enhanced-breadcrumbs">
-                <Link to={isAdmin ? '/admin/dashboard' : '/client/dashboard'} className="enhanced-breadcrumb-dashboard">
-                  Dashboard
-                </Link>
-                {location.pathname !== (isAdmin ? '/admin/dashboard' : '/client/dashboard') && (
-                  <>
-                    <span className="enhanced-breadcrumb-separator">/</span>
-                    <span className="enhanced-breadcrumb-current">
-                      {location.pathname.split('/').pop()?.replace('-', ' ') || 'Page'}
-                    </span>
-                  </>
-                )}
-              </nav>
-            </div>
-
-            {/* Center section - Search */}
-            <div className="enhanced-search-container">
-              <Search className="enhanced-search-icon" />
+            {/* Search */}
+            <div className={`flex-1 max-w-md relative transition-all duration-200 ${searchFocused ? 'max-w-lg' : ''}`}>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Rechercher polices, utilisateurs... (Ctrl+K)"
+                placeholder="Rechercher... (Ctrl+K)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                className={`enhanced-search-input ${searchFocused ? 'enhanced-search-input--focused' : ''}`}
+                className="dashboard-search-input w-full pl-9 pr-4 py-2 bg-slate-800/80 border border-slate-700/60 text-white text-sm rounded-xl placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all duration-200"
               />
               {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="enhanced-search-clear"
-                  title="Clear search"
-                >
-                  <X className="h-4 w-4" />
+                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                  <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
 
-            {/* Right section - Actions */}
-            <div className="enhanced-header-actions">
-              {/* Quick actions */}
-              <div className="enhanced-quick-actions">
-                <Link
-                  to="/"
-                  className="enhanced-action-btn enhanced-home-btn"
-                  title="Retour à l'accueil"
-                >
-                  <Home className="h-5 w-5" />
-                  <span className="enhanced-home-text">Accueil</span>
-                </Link>
+            {/* Right actions */}
+            <div className="flex items-center gap-1 ml-auto">
+              {/* Home link */}
+              <Link
+                to="/"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700/60 rounded-lg text-sm transition-all duration-200"
+                title="Retour à l'accueil"
+              >
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">Accueil</span>
+              </Link>
 
-                <button
-                  onClick={toggleFullscreen}
-                  className="enhanced-action-btn"
-                  title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                >
-                  {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
-                </button>
-              </div>
+              {/* Theme toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/60 rounded-lg transition-all duration-200"
+                title="Changer le thème"
+              >
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
 
-              {/* Notifications dropdown */}
-              <div className="enhanced-notifications-container" ref={notificationsRef}>
+              {/* Fullscreen */}
+              <button
+                onClick={toggleFullscreen}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/60 rounded-lg transition-all duration-200"
+                title={isFullscreen ? 'Quitter le plein écran' : 'Plein écran'}
+              >
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </button>
+
+              {/* Notifications */}
+              <div className="relative" ref={notificationsRef}>
                 <button
-                  className="enhanced-action-btn enhanced-notification-btn"
-                  title="Notifications"
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
+                  className="relative p-2 text-slate-400 hover:text-white hover:bg-slate-700/60 rounded-lg transition-all duration-200"
+                  title="Notifications"
                 >
-                  <Bell className="h-5 w-5" />
+                  <Bell className="h-4 w-4" />
                   {notifications.length > 0 && (
-                    <span className="enhanced-notification-badge">
-                      {notifications.length}
-                    </span>
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-slate-900" />
                   )}
                 </button>
 
                 {notificationsOpen && (
-                  <div className="enhanced-notifications-dropdown">
-                    <div className="enhanced-notifications-header">
-                      <h3>Notifications</h3>
-                      <button
-                        onClick={() => setNotificationsOpen(false)}
-                        className="enhanced-notifications-close"
-                      >
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-slate-800 border border-slate-700/60 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/60">
+                      <h3 className="text-white font-semibold text-sm">Notifications</h3>
+                      <button onClick={() => setNotificationsOpen(false)} className="text-slate-500 hover:text-white">
                         <X className="h-4 w-4" />
                       </button>
                     </div>
-                    <div className="enhanced-notifications-list">
+                    <div className="max-h-72 overflow-y-auto">
                       {notifications.length > 0 ? (
-                        notifications.slice(0, 5).map((notification, index) => (
-                          <div key={notification.id || index} className="enhanced-notification-item">
-                            <div className="enhanced-notification-icon">
-                              {notification.type === 'warning' ? (
-                                <AlertTriangle className="h-4 w-4" />
-                              ) : (
-                                <Bell className="h-4 w-4" />
-                              )}
+                        notifications.slice(0, 5).map((n, i) => (
+                          <div key={n.id || i} className="flex items-start gap-3 px-4 py-3 hover:bg-slate-700/40 transition-colors border-b border-slate-700/30 last:border-0">
+                            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <Bell className="h-3.5 w-3.5 text-blue-400" />
                             </div>
-                            <div className="enhanced-notification-content">
-                              <p>{notification.title || notification.message}</p>
-                              <span>
-                                {notification.created_at
-                                  ? new Date(notification.created_at).toLocaleDateString()
-                                  : 'Recently'
-                                }
-                              </span>
+                            <div>
+                              <p className="text-slate-200 text-sm">{n.title || n.message}</p>
+                              <p className="text-slate-500 text-xs mt-0.5">
+                                {n.created_at ? new Date(n.created_at).toLocaleDateString() : 'Récemment'}
+                              </p>
                             </div>
                           </div>
                         ))
                       ) : (
-                        <div className="enhanced-notification-item">
-                          <div className="enhanced-notification-content">
-                            <p className="text-slate-500 dark:text-slate-400">No notifications</p>
-                          </div>
+                        <div className="px-4 py-8 text-center">
+                          <Bell className="h-8 w-8 text-slate-600 mx-auto mb-2" />
+                          <p className="text-slate-500 text-sm">Aucune notification</p>
                         </div>
                       )}
                     </div>
@@ -478,108 +408,60 @@ const EnhancedDashboardLayout = ({ children }) => {
                 )}
               </div>
 
-              {/* User menu dropdown */}
-              <div className="enhanced-user-menu" ref={userMenuRef}>
+              {/* User menu */}
+              <div className="relative" ref={userMenuRef}>
                 <button
-                  className="enhanced-user-menu-btn"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   disabled={isLoadingUser}
+                  className="flex items-center gap-2 pl-2 pr-3 py-1.5 hover:bg-slate-700/60 rounded-xl transition-all duration-200 ml-1"
                 >
-                  <div className="enhanced-user-menu-avatar">
-                    {isLoadingUser ? (
-                      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
-                    ) : userData?.avatar_url ? (
-                      <img
-                        src={userData.avatar_url}
-                        alt="Profile"
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="enhanced-user-menu-initials">
-                        {userData?.first_name?.[0] || 'U'}{userData?.last_name?.[0] || 'U'}
-                      </span>
-                    )}
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {isLoadingUser ? '…' : `${userData?.first_name?.[0] || 'U'}${userData?.last_name?.[0] || ''}`}
                   </div>
-                  <div className="enhanced-user-menu-info">
-                    <span className="enhanced-user-menu-name">
-                      {isLoadingUser ? (
-                        <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                      ) : (
-                        `${userData?.first_name || 'User'} ${userData?.last_name || ''}`
-                      )}
-                    </span>
-                    <span className="enhanced-user-menu-role">
-                      {isLoadingUser ? (
-                        <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                      ) : (
-                        userData?.role || 'client'
-                      )}
-                    </span>
+                  <div className="hidden sm:block text-left">
+                    <p className="text-white text-xs font-medium leading-none">
+                      {isLoadingUser ? '...' : `${userData?.first_name || 'User'}`}
+                    </p>
+                    <p className="text-slate-500 text-xs mt-0.5">{userData?.role || 'client'}</p>
                   </div>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-3.5 w-3.5 text-slate-500 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {userMenuOpen && (
-                  <div className="enhanced-user-dropdown">
-                    <div className="enhanced-user-dropdown-header">
-                      <div className="enhanced-user-dropdown-avatar">
-                        {userData?.avatar_url ? (
-                          <img
-                            src={userData.avatar_url}
-                            alt="Profile"
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="enhanced-user-dropdown-initials">
-                            {userData?.first_name?.[0] || 'U'}{userData?.last_name?.[0] || 'U'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="enhanced-user-dropdown-info">
-                        <p className="enhanced-user-dropdown-name">
-                          {userData?.first_name || 'User'} {userData?.last_name || ''}
-                        </p>
-                        <p className="enhanced-user-dropdown-email">
-                          {userData?.email || ''}
-                        </p>
-                      </div>
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-slate-800 border border-slate-700/60 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50">
+                    <div className="px-4 py-3 border-b border-slate-700/60">
+                      <p className="text-white text-sm font-semibold">{userData?.first_name} {userData?.last_name}</p>
+                      <p className="text-slate-500 text-xs mt-0.5 truncate">{userData?.email}</p>
                     </div>
-                    <div className="enhanced-user-dropdown-menu">
-                      <Link to="/profile" className="enhanced-user-dropdown-item">
-                        <User className="h-4 w-4" />
-                        Profile
+                    <div className="py-1">
+                      <Link to="/profile" className="flex items-center gap-2.5 px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700/60 text-sm transition-colors">
+                        <User className="h-4 w-4" /> Profil
                       </Link>
-                      <Link to="/settings" className="enhanced-user-dropdown-item">
-                        <Settings className="h-4 w-4" />
-                        Settings
+                      <Link to="/settings" className="flex items-center gap-2.5 px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700/60 text-sm transition-colors">
+                        <Settings className="h-4 w-4" /> Paramètres
                       </Link>
-                      <Link to="/help" className="enhanced-user-dropdown-item">
-                        <HelpCircle className="h-4 w-4" />
-                        Help & Support
+                      <Link to="/help" className="flex items-center gap-2.5 px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700/60 text-sm transition-colors">
+                        <HelpCircle className="h-4 w-4" /> Aide
                       </Link>
-                      <div className="enhanced-user-dropdown-divider" />
+                    </div>
+                    <div className="border-t border-slate-700/60 py-1">
                       <button
                         onClick={handleLogout}
-                        className="enhanced-user-dropdown-item enhanced-user-dropdown-logout"
+                        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 text-sm transition-colors"
                       >
-                        <LogOut className="h-4 w-4" />
-                        Sign out
+                        <LogOut className="h-4 w-4" /> Se déconnecter
                       </button>
                     </div>
                   </div>
                 )}
               </div>
-
             </div>
           </div>
         </header>
 
-
-        {/* Main content */}
-        <main className="enhanced-main-content">
-          <div className="enhanced-content-container">
-            {children || <Outlet />}
-          </div>
+        {/* ── Page content ── */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          {children || <Outlet />}
         </main>
       </div>
     </div>
@@ -587,5 +469,3 @@ const EnhancedDashboardLayout = ({ children }) => {
 };
 
 export default EnhancedDashboardLayout;
-
-
