@@ -15,38 +15,30 @@
 
 ## 📸 Aperçu
 
-### Page d'Accueil
-> 📷 *Capture d'écran à ajouter — `docs/screenshots/home.png`*
-
-<!-- ![Page d'Accueil](docs/screenshots/home.png) -->
+### 🏠 Page d'Accueil
+![Page d'Accueil](docs/screenshots/home.png)
 
 ---
 
-### Tableau de Bord Admin
-> 📷 *Capture d'écran à ajouter — `docs/screenshots/admin-dashboard.png`*
-
-<!-- ![Admin Dashboard](docs/screenshots/admin-dashboard.png) -->
+### 📊 Tableau de Bord Admin
+![Tableau de Bord Admin](docs/screenshots/admin-dashboard.png)
 
 ---
 
-### Espace Client
-> 📷 *Capture d'écran à ajouter — `docs/screenshots/client-dashboard.png`*
-
-<!-- ![Espace Client](docs/screenshots/client-dashboard.png) -->
+### 👤 Espace Client
+![Espace Client](docs/screenshots/client-space.png)
 
 ---
 
-### Gestion des Devis
-> 📷 *Capture d'écran à ajouter — `docs/screenshots/devis.png`*
-
-<!-- ![Devis](docs/screenshots/devis.png) -->
+### 📋 Gestion des Devis
+![Gestion des Devis](docs/screenshots/admin-quotes.png)
 
 ---
 
-### Gestion des Sinistres
-> 📷 *Capture d'écran à ajouter — `docs/screenshots/sinistres.png`*
+### 🚨 Gestion des Sinistres
+![Gestion des Sinistres](docs/screenshots/admin-claims.png)
 
-<!-- ![Sinistres](docs/screenshots/sinistres.png) -->
+---
 
 ---
 
